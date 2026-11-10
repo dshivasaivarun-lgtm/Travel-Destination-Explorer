@@ -1,10 +1,17 @@
 package com.pes.travelexplorer.ui.navigation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
@@ -12,9 +19,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.pes.travelexplorer.data.model.Country
+import com.pes.travelexplorer.data.repository.CountryRepository
 import com.pes.travelexplorer.ui.cities.CityScreen
 import com.pes.travelexplorer.ui.details.CountryDetailScreen
 import com.pes.travelexplorer.ui.states.StateScreen
+import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -28,7 +40,7 @@ fun AppNavGraph() {
         startDestination = "explore"
     ) {
         composable("explore") {
-            ExploreTestScreen(
+            ExploreDynamicScreen(
                 onCountryClick = { countryCode ->
                     navController.navigate("country_details/$countryCode")
                 }
@@ -66,7 +78,8 @@ fun AppNavGraph() {
             arguments = listOf(
                 navArgument("countryCode") { type = NavType.StringType },
                 navArgument("admin1Id") { type = NavType.StringType },
-                navArgument("stateName") { type = NavType.StringType })
+                navArgument("stateName") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
             val countryCode = backStackEntry.arguments?.getString("countryCode") ?: "IN"
             val admin1Id = backStackEntry.arguments?.getString("admin1Id") ?: ""
@@ -82,13 +95,43 @@ fun AppNavGraph() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
-fun ExploreTestScreen(onCountryClick: (String) -> Unit) {
+fun ExploreDynamicScreen(
+    onCountryClick: (String) -> Unit
+) {
+    var countries by remember { mutableStateOf<List<Country>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+
+    fun loadCountries() {
+        scope.launch {
+            isLoading = true
+            errorMessage = null
+            val result = CountryRepository().getAllCountries()
+            result.fold(
+                onSuccess = { list ->
+                    countries = list.sortedBy { it.names?.common }
+                    isLoading = false
+                },
+                onFailure = { error ->
+                    errorMessage = error.localizedMessage ?: "Failed to load countries"
+                    isLoading = false
+                }
+            )
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        loadCountries()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Travel Explorer - Geographic Browse") },
+                title = { Text("Travel Explorer - All Countries") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -100,34 +143,110 @@ fun ExploreTestScreen(onCountryClick: (String) -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
         ) {
-            Text(
-                text = "Select a Country to Explore",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            val testCountries = listOf(
-                "IND" to "India 🇮🇳",
-                "JPN" to "Japan 🇯🇵",
-                "FRA" to "France 🇫🇷",
-                "USA" to "United States 🇺🇸"
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Search all countries...") },
+                leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
+                singleLine = true
             )
 
-            testCountries.forEach { (code, name) ->
-                Button(
-                    onClick = { onCountryClick(code) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                ) {
-                    Text(text = name, style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            when {
+                isLoading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                errorMessage != null -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = errorMessage ?: "Error", color = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = { loadCountries() }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+                else -> {
+                    val filtered = countries.filter {
+                        it.names?.common?.contains(searchQuery, ignoreCase = true) == true ||
+                        it.region?.contains(searchQuery, ignoreCase = true) == true
+                    }
+
+                    if (filtered.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(text = "No countries found.")
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(filtered) { country ->
+                                CountryCardItem(country = country) {
+                                    val alpha3 = country.codes?.alpha3
+                                    if (!alpha3.isNullOrBlank()) {
+                                        onCountryClick(alpha3)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun CountryCardItem(country: Country, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val flagUrl = country.flag?.urlPng ?: country.flag?.urlSvg
+            if (!flagUrl.isNullOrBlank()) {
+                Card(
+                    modifier = Modifier.size(56.dp, 36.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    GlideImage(
+                        model = flagUrl,
+                        contentDescription = "Flag",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = country.names?.common ?: "Unknown",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                if (!country.region.isNullOrBlank()) {
+                    Text(
+                        text = country.region,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
         }
     }
