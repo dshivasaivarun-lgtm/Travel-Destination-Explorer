@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +25,7 @@ import com.pes.travelexplorer.data.repository.CountryRepository
 import com.pes.travelexplorer.ui.cities.CityScreen
 import com.pes.travelexplorer.ui.details.CountryDetailScreen
 import com.pes.travelexplorer.ui.states.StateScreen
+import com.pes.travelexplorer.ui.tourist.TouristPlacesScreen
 import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -89,6 +89,29 @@ fun AppNavGraph() {
                 countryCode = countryCode,
                 admin1Id = admin1Id,
                 stateName = stateName,
+                onBackClick = { navController.popBackStack() },
+                onTouristPlacesClick = { cityName, lat, lon ->
+                    val encodedCity = URLEncoder.encode(cityName, StandardCharsets.UTF_8.toString())
+                    navController.navigate("tourist_places/$encodedCity/$lat/$lon")
+                }
+            )
+        }
+        composable(
+            route = "tourist_places/{cityName}/{lat}/{lon}",
+            arguments = listOf(
+                navArgument("cityName") { type = NavType.StringType },
+                navArgument("lat") { type = NavType.StringType },
+                navArgument("lon") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val encodedCity = backStackEntry.arguments?.getString("cityName") ?: "City"
+            val cityName = URLDecoder.decode(encodedCity, StandardCharsets.UTF_8.toString())
+            val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull() ?: 12.9716
+            val lon = backStackEntry.arguments?.getString("lon")?.toDoubleOrNull() ?: 77.5946
+            TouristPlacesScreen(
+                cityName = cityName,
+                latitude = lat,
+                longitude = lon,
                 onBackClick = { navController.popBackStack() }
             )
         }

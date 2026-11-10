@@ -24,6 +24,7 @@ fun CityScreen(
     admin1Id: String,
     stateName: String,
     viewModel: CityViewModel = viewModel(),
+    onTouristPlacesClick: (String, Double, Double) -> Unit,
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -103,7 +104,7 @@ fun CityScreen(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(filteredCities) { city ->
-                                CityItemCard(city = city)
+                                CityItemCard(city = city, onTouristPlacesClick = onTouristPlacesClick)
                             }
                         }
                     }
@@ -114,7 +115,7 @@ fun CityScreen(
 }
 
 @Composable
-fun CityItemCard(city: City) {
+fun CityItemCard(city: City, onTouristPlacesClick: (String, Double, Double) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -123,7 +124,7 @@ fun CityItemCard(city: City) {
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = city.name ?: "Unknown City",
@@ -143,6 +144,17 @@ fun CityItemCard(city: City) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
+            }
+
+            Button(
+                onClick = {
+                    val lat = city.latitude ?: 12.9716
+                    val lon = city.longitude ?: 77.5946
+                    onTouristPlacesClick(city.name ?: "City", lat, lon)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("View Tourist Attractions")
             }
         }
     }
