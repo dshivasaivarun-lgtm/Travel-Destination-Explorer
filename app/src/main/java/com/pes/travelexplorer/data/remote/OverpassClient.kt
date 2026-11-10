@@ -12,7 +12,10 @@ object OverpassClient {
     private const val BASE_URL = "https://overpass-api.de/api/"
 
     private val loggingInterceptor = Interceptor { chain ->
-        val request = chain.request()
+        val originalRequest = chain.request()
+        val request = originalRequest.newBuilder()
+            .header("User-Agent", "TravelExplorer-AndroidApp/1.0 (Student Project)")
+            .build()
         Log.d(TAG, "Sending Overpass request to: ${request.url}")
         val response = chain.proceed(request)
         Log.d(TAG, "Received Overpass response status=${response.code}")
