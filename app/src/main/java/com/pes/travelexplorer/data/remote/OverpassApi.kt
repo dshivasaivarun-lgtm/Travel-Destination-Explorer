@@ -1,12 +1,13 @@
 package com.pes.travelexplorer.data.remote
 
 import com.pes.travelexplorer.data.model.OverpassResponse
-import retrofit2.http.GET
-import retrofit2.http.Query
+import okhttp3.RequestBody
+import retrofit2.http.Body
+import retrofit2.http.POST
 
 interface OverpassApi {
-    @GET("interpreter")
+    @POST("interpreter")
     suspend fun getTouristPlaces(
-        @Query("data") query: String
+        @Body query: RequestBody
     ): OverpassResponse
 }

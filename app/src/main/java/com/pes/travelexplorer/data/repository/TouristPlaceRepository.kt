@@ -6,6 +6,8 @@ import com.pes.travelexplorer.data.remote.OverpassApi
 import com.pes.travelexplorer.data.remote.OverpassClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -40,7 +42,8 @@ class TouristPlaceRepository(
                     out center;
                 """.trimIndent()
 
-                val response = api.getTouristPlaces(query)
+                val requestBody = query.toRequestBody("text/plain; charset=utf-8".toMediaTypeOrNull())
+                val response = api.getTouristPlaces(requestBody)
                 val elements = response.elements ?: emptyList()
 
                 val places = elements.mapNotNull { element ->
@@ -83,7 +86,7 @@ class TouristPlaceRepository(
             } catch (e: IOException) {
                 val message = "Network connection error. Please check your internet connection."
                 Log.e(TAG, message, e)
-                Result.failure(Exception(message, e))
+                Result.failure(e)
             } catch (e: Exception) {
                 Log.e(TAG, "Unexpected error fetching tourist places: ${e.message}", e)
                 Result.failure(e)
