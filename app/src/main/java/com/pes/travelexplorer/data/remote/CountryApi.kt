@@ -13,4 +13,7 @@ interface CountryApi {
 
     @GET("codes.alpha_3/{code}")
     suspend fun getCountryByCode(@Path("code") code: String): CountryResponse
+
+    @GET("region/{region}")
+    suspend fun getCountriesByRegion(@Path("region") region: String): CountryResponse
 }

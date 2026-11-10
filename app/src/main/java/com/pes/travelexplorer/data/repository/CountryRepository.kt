@@ -6,6 +6,8 @@ import com.pes.travelexplorer.data.model.Country
 import com.pes.travelexplorer.data.remote.CountryApi
 import com.pes.travelexplorer.data.remote.RetrofitClient
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 
 class CountryRepository(
@@ -23,8 +25,23 @@ class CountryRepository(
                         IllegalStateException("API key is missing. Please configure 'API_KEY' in local.properties.")
                     )
                 }
-                val response = api.getAllCountries()
-                val countries = response.data?.objects ?: emptyList()
+
+                // Query all global regions in parallel to retrieve every country in the world dynamically
+                val regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania")
+
+                val deferredRegions = regions.map { region ->
+                    async {
+                        try {
+                            val response = api.getCountriesByRegion(region)
+                            response.data?.objects ?: emptyList()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to fetch region $region: ${e.message}")
+                            emptyList()
+                        }
+                    }
+                }
+
+                val countries = deferredRegions.awaitAll().flatten().distinctBy { it.codes?.alpha3 }
                 Result.success(countries)
             } catch (e: Exception) {
                 Log.e(TAG, "getAllCountries failed: ${e.message}", e)
@@ -64,8 +81,8 @@ class CountryRepository(
                 if (country != null) {
                     Result.success(country)
                 } else {
-                    val allResponse = api.getAllCountries()
-                    val found = allResponse.data?.objects?.find {
+                    val allResult = getAllCountries()
+                    val found = allResult.getOrNull()?.find {
                         it.codes?.alpha3.equals(alpha3, ignoreCase = true)
                     }
                     Result.success(found)
@@ -73,8 +90,8 @@ class CountryRepository(
             } catch (e: Exception) {
                 Log.e(TAG, "getCountryByCode failed for $alpha3: ${e.message}", e)
                 try {
-                    val allResponse = api.getAllCountries()
-                    val found = allResponse.data?.objects?.find {
+                    val allResult = getAllCountries()
+                    val found = allResult.getOrNull()?.find {
                         it.codes?.alpha3.equals(alpha3, ignoreCase = true)
                     }
                     Result.success(found)
