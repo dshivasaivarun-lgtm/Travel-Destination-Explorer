@@ -41,7 +41,11 @@ class CountryRepository(
                     }
                 }
 
-                val countries = deferredRegions.awaitAll().flatten().distinctBy { it.codes?.alpha3 }
+                val countries = deferredRegions.awaitAll()
+                    .flatten()
+                    .distinctBy { it.codes?.alpha3 }
+                    .filterNot { it.names?.common.equals("Abkhazia", ignoreCase = true) }
+
                 Result.success(countries)
             } catch (e: Exception) {
                 Log.e(TAG, "getAllCountries failed: ${e.message}", e)
