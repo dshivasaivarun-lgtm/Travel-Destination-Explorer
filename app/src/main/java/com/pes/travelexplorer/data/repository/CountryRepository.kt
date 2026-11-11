@@ -26,22 +26,51 @@ class CountryRepository(
                     )
                 }
 
-                // Query all global regions in parallel to retrieve every country in the world dynamically
-                val regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania")
+                val countryNames = listOf(
+                    "India", "Japan", "France", "United States", "Brazil",
+                    "Germany", "Canada", "Australia", "United Kingdom", "Italy",
+                    "Spain", "Mexico", "China", "South Korea", "Egypt",
+                    "South Africa", "Argentina", "New Zealand", "Thailand", "Vietnam",
+                    "Indonesia", "Greece", "Switzerland", "Sweden", "Norway",
+                    "Netherlands", "Belgium", "Portugal", "Turkey", "Saudi Arabia",
+                    "United Arab Emirates", "Singapore", "Malaysia", "Philippines", "Ireland",
+                    "Austria", "Poland", "Denmark", "Finland", "Chile", "Colombia", "Peru"
+                )
 
+                val deferredCountries = countryNames.map { name ->
+                    async {
+                        try {
+                            val response = api.getCountryByName(name)
+                            response.data?.objects?.firstOrNull()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed for country name $name: ${e.message}")
+                            null
+                        }
+                    }
+                }
+
+                var countries = deferredCountries.awaitAll().filterNotNull()
+
+                if (countries.isNotEmpty()) {
+                    countries = countries
+                        .distinctBy { it.codes?.alpha3 }
+                        .filterNot { it.names?.common.equals("Abkhazia", ignoreCase = true) }
+                    return@withContext Result.success(countries)
+                }
+
+                val regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania")
                 val deferredRegions = regions.map { region ->
                     async {
                         try {
                             val response = api.getCountriesByRegion(region)
                             response.data?.objects ?: emptyList()
                         } catch (e: Exception) {
-                            Log.e(TAG, "Failed to fetch region $region: ${e.message}")
                             emptyList()
                         }
                     }
                 }
 
-                val countries = deferredRegions.awaitAll()
+                countries = deferredRegions.awaitAll()
                     .flatten()
                     .distinctBy { it.codes?.alpha3 }
                     .filterNot { it.names?.common.equals("Abkhazia", ignoreCase = true) }
