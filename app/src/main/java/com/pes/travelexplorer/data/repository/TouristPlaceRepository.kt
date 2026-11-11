@@ -16,7 +16,6 @@ class TouristPlaceRepository(
 ) {
     companion object {
         private const val TAG = "TouristPlaceRepository"
-        // In-memory cache to respect ODbL and rate limits of public Overpass servers
         private val cache = mutableMapOf<String, List<TouristPlace>>()
     }
 
@@ -33,11 +32,16 @@ class TouristPlaceRepository(
 
         return withContext(Dispatchers.IO) {
             try {
+                // Optimized Overpass QL query using indexed tags for fast response
                 val query = """
-                    [out:json][timeout:25];
+                    [out:json][timeout:45];
                     (
-                      node(around:$radiusMeters,$lat,$lon)[~"^(tourism|historic|leisure)$"~"attraction|museum|viewpoint|artwork|park|castle|monument|zoo|theme_park"];
-                      way(around:$radiusMeters,$lat,$lon)[~"^(tourism|historic|leisure)$"~"attraction|museum|viewpoint|artwork|park|castle|monument|zoo|theme_park"];
+                      node(around:$radiusMeters,$lat,$lon)[tourism];
+                      node(around:$radiusMeters,$lat,$lon)[historic];
+                      node(around:$radiusMeters,$lat,$lon)[leisure=park];
+                      way(around:$radiusMeters,$lat,$lon)[tourism];
+                      way(around:$radiusMeters,$lat,$lon)[historic];
+                      way(around:$radiusMeters,$lat,$lon)[leisure=park];
                     );
                     out center;
                 """.trimIndent()
@@ -53,10 +57,8 @@ class TouristPlaceRepository(
                     val latitude = element.lat ?: element.center?.lat ?: return@mapNotNull null
                     val longitude = element.lon ?: element.center?.lon ?: return@mapNotNull null
 
-                    // Determine category
-                    val category = tags["tourism"] ?: tags["historic"] ?: tags["leisure"] ?: "attraction"
+                    val category = tags["tourism"] ?: tags["historic"] ?: tags["leisure"] ?: "Attraction"
 
-                    // Optional fields
                     val address = tags["addr:full"] ?: tags["addr:street"]
                     val website = tags["website"] ?: tags["contact:website"]
                     val openingHours = tags["opening_hours"]
@@ -84,9 +86,9 @@ class TouristPlaceRepository(
                 Log.e(TAG, message, e)
                 Result.failure(Exception(message, e))
             } catch (e: IOException) {
-                val message = "Network connection error. Please check your internet connection."
+                val message = "Server timeout or network connection error. Please try again."
                 Log.e(TAG, message, e)
-                Result.failure(e)
+                Result.failure(Exception(message, e))
             } catch (e: Exception) {
                 Log.e(TAG, "Unexpected error fetching tourist places: ${e.message}", e)
                 Result.failure(e)
