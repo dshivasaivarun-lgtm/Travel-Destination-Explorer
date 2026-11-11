@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +24,7 @@ fun TouristPlacesScreen(
     latitude: Double,
     longitude: Double,
     viewModel: TouristPlacesViewModel = viewModel(),
+    onViewOnMapClick: (String, Double, Double) -> Unit = { _, _, _ -> },
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -40,6 +42,11 @@ fun TouristPlacesScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onViewOnMapClick(cityName, latitude, longitude) }) {
+                        Icon(imageVector = Icons.Default.Map, contentDescription = "View on Map")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -69,7 +76,6 @@ fun TouristPlacesScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Search Bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -81,7 +87,6 @@ fun TouristPlacesScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Radius selector chips
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

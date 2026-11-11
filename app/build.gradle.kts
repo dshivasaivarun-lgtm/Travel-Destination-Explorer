@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.glide)
     implementation(libs.glide.compose)
+    implementation(libs.maplibre.android.sdk)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

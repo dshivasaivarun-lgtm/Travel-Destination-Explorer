@@ -24,6 +24,7 @@ import com.pes.travelexplorer.data.model.Country
 import com.pes.travelexplorer.data.repository.CountryRepository
 import com.pes.travelexplorer.ui.cities.CityScreen
 import com.pes.travelexplorer.ui.details.CountryDetailScreen
+import com.pes.travelexplorer.ui.map.TravelMapScreen
 import com.pes.travelexplorer.ui.states.StateScreen
 import com.pes.travelexplorer.ui.tourist.TouristPlacesScreen
 import kotlinx.coroutines.launch
@@ -109,6 +110,29 @@ fun AppNavGraph() {
             val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull() ?: 12.9716
             val lon = backStackEntry.arguments?.getString("lon")?.toDoubleOrNull() ?: 77.5946
             TouristPlacesScreen(
+                cityName = cityName,
+                latitude = lat,
+                longitude = lon,
+                onBackClick = { navController.popBackStack() },
+                onViewOnMapClick = { name, latitude, longitude ->
+                    val enc = URLEncoder.encode(name, StandardCharsets.UTF_8.toString())
+                    navController.navigate("map/$enc/$latitude/$longitude")
+                }
+            )
+        }
+        composable(
+            route = "map/{cityName}/{lat}/{lon}",
+            arguments = listOf(
+                navArgument("cityName") { type = NavType.StringType },
+                navArgument("lat") { type = NavType.StringType },
+                navArgument("lon") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val encodedCity = backStackEntry.arguments?.getString("cityName") ?: "City"
+            val cityName = URLDecoder.decode(encodedCity, StandardCharsets.UTF_8.toString())
+            val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull() ?: 12.9716
+            val lon = backStackEntry.arguments?.getString("lon")?.toDoubleOrNull() ?: 77.5946
+            TravelMapScreen(
                 cityName = cityName,
                 latitude = lat,
                 longitude = lon,
