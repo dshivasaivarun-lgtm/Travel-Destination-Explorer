@@ -9,7 +9,8 @@ import java.util.concurrent.TimeUnit
 
 object OverpassClient {
     private const val TAG = "OverpassClient"
-    private const val BASE_URL = "https://overpass-api.de/api/"
+    private const val PRIMARY_BASE_URL = "https://overpass-api.de/api/"
+    private const val MIRROR_BASE_URL = "https://overpass.kumi.systems/api/"
 
     private val loggingInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
@@ -24,14 +25,23 @@ object OverpassClient {
 
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .connectTimeout(60, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
+        .connectTimeout(45, TimeUnit.SECONDS)
+        .readTimeout(45, TimeUnit.SECONDS)
+        .writeTimeout(45, TimeUnit.SECONDS)
         .build()
 
     val api: OverpassApi by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(PRIMARY_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(OverpassApi::class.java)
+    }
+
+    val mirrorApi: OverpassApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(MIRROR_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

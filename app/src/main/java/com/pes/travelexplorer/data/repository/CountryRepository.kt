@@ -26,39 +26,23 @@ class CountryRepository(
                     )
                 }
 
-                val countryNames = listOf(
-                    "India", "Japan", "France", "United States", "Brazil",
-                    "Germany", "Canada", "Australia", "United Kingdom", "Italy",
-                    "Spain", "Mexico", "China", "South Korea", "Egypt",
-                    "South Africa", "Argentina", "New Zealand", "Thailand", "Vietnam",
-                    "Indonesia", "Greece", "Switzerland", "Sweden", "Norway",
-                    "Netherlands", "Belgium", "Portugal", "Turkey", "Saudi Arabia",
-                    "United Arab Emirates", "Singapore", "Malaysia", "Philippines", "Ireland",
-                    "Austria", "Poland", "Denmark", "Finland", "Chile", "Colombia", "Peru"
-                )
+                // Query all global regions in parallel to retrieve every country in the world dynamically
+                val regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania")
 
-                var lastException: Exception? = null
-                val deferredCountries = countryNames.map { name ->
+                val deferredRegions = regions.map { region ->
                     async {
                         try {
-                            val response = api.getCountryByName(name)
-                            response.data?.objects?.firstOrNull()
+                            val response = api.getCountriesByRegion(region)
+                            response.data?.objects ?: emptyList()
                         } catch (e: Exception) {
-                            Log.e(TAG, "Failed for country name $name: ${e.message}", e)
-                            lastException = e
-                            null
+                            Log.e(TAG, "Failed to fetch region $region: ${e.message}")
+                            emptyList()
                         }
                     }
                 }
 
-                var countries = deferredCountries.awaitAll().filterNotNull()
-
-                val exception = lastException
-                if (countries.isEmpty() && exception != null) {
-                    return@withContext Result.failure(exception)
-                }
-
-                countries = countries
+                val countries = deferredRegions.awaitAll()
+                    .flatten()
                     .distinctBy { it.codes?.alpha3 }
                     .filterNot { it.names?.common.equals("Abkhazia", ignoreCase = true) }
 
