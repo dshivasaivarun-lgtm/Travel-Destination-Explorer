@@ -37,13 +37,15 @@ class CountryRepository(
                     "Austria", "Poland", "Denmark", "Finland", "Chile", "Colombia", "Peru"
                 )
 
+                var lastException: Exception? = null
                 val deferredCountries = countryNames.map { name ->
                     async {
                         try {
                             val response = api.getCountryByName(name)
                             response.data?.objects?.firstOrNull()
                         } catch (e: Exception) {
-                            Log.e(TAG, "Failed for country name $name: ${e.message}")
+                            Log.e(TAG, "Failed for country name $name: ${e.message}", e)
+                            lastException = e
                             null
                         }
                     }
@@ -51,27 +53,12 @@ class CountryRepository(
 
                 var countries = deferredCountries.awaitAll().filterNotNull()
 
-                if (countries.isNotEmpty()) {
-                    countries = countries
-                        .distinctBy { it.codes?.alpha3 }
-                        .filterNot { it.names?.common.equals("Abkhazia", ignoreCase = true) }
-                    return@withContext Result.success(countries)
+                val exception = lastException
+                if (countries.isEmpty() && exception != null) {
+                    return@withContext Result.failure(exception)
                 }
 
-                val regions = listOf("Africa", "Americas", "Asia", "Europe", "Oceania")
-                val deferredRegions = regions.map { region ->
-                    async {
-                        try {
-                            val response = api.getCountriesByRegion(region)
-                            response.data?.objects ?: emptyList()
-                        } catch (e: Exception) {
-                            emptyList()
-                        }
-                    }
-                }
-
-                countries = deferredRegions.awaitAll()
-                    .flatten()
+                countries = countries
                     .distinctBy { it.codes?.alpha3 }
                     .filterNot { it.names?.common.equals("Abkhazia", ignoreCase = true) }
 
