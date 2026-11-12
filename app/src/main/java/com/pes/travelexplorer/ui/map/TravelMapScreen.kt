@@ -44,6 +44,8 @@ fun TravelMapScreen(
         viewModel.loadMapData(latitude, longitude)
     }
 
+    val places = (uiState as? TravelMapUiState.Success)?.places ?: emptyList()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -79,39 +81,67 @@ fun TravelMapScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // ALWAYS render the MapLibre container so the interactive map is always visible
+            MapLibreContainer(
+                cityLat = latitude,
+                cityLon = longitude,
+                touristPlaces = places,
+                onPlaceSelected = { place -> selectedPlace = place }
+            )
+
+            // Overlay loading progress or error banner on top of the map
             when (val state = uiState) {
                 is TravelMapUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                is TravelMapUiState.Error -> {
-                    Column(
+                    Surface(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .align(Alignment.TopCenter)
+                            .padding(top = 16.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        tonalElevation = 6.dp
                     ) {
-                        Text(
-                            text = state.message,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadMapData(latitude, longitude) }) {
-                            Text("Retry")
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            Text("Loading attractions...", style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
-                is TravelMapUiState.Success -> {
-                    MapLibreContainer(
-                        cityLat = latitude,
-                        cityLon = longitude,
-                        touristPlaces = state.places,
-                        onPlaceSelected = { place -> selectedPlace = place }
-                    )
+                is TravelMapUiState.Error -> {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(16.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        tonalElevation = 6.dp
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Attractions unavailable",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                            Button(
+                                onClick = { viewModel.loadMapData(latitude, longitude) },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Text("Retry")
+                            }
+                        }
+                    }
                 }
+                else -> {}
             }
 
+            // Bottom sheet when a marker is clicked
             selectedPlace?.let { place ->
                 ModalBottomSheet(
                     onDismissRequest = { selectedPlace = null },
@@ -131,7 +161,6 @@ fun MapLibreContainer(
     touristPlaces: List<TouristPlace>,
     onPlaceSelected: (TouristPlace) -> Unit
 ) {
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var mapViewRef by remember { mutableStateOf<MapView?>(null) }
 
