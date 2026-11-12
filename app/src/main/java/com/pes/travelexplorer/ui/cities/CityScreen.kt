@@ -1,5 +1,6 @@
 package com.pes.travelexplorer.ui.cities
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -117,14 +118,20 @@ fun CityScreen(
 @Composable
 fun CityItemCard(city: City, onTouristPlacesClick: (String, Double, Double) -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                val lat = city.latitude ?: 12.9716
+                val lon = city.longitude ?: 77.5946
+                onTouristPlacesClick(city.name ?: "City", lat, lon)
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 text = city.name ?: "Unknown City",
@@ -144,17 +151,6 @@ fun CityItemCard(city: City, onTouristPlacesClick: (String, Double, Double) -> U
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
-            }
-
-            Button(
-                onClick = {
-                    val lat = city.latitude ?: 12.9716
-                    val lon = city.longitude ?: 77.5946
-                    onTouristPlacesClick(city.name ?: "City", lat, lon)
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("View Tourist Attractions")
             }
         }
     }
