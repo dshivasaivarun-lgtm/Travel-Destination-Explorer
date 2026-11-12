@@ -16,16 +16,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pes.travelexplorer.data.model.TouristPlace
-import org.maplibre.android.MapLibre
-import org.maplibre.android.annotations.Marker
-import org.maplibre.android.annotations.MarkerOptions
-import org.maplibre.android.camera.CameraPosition
-import org.maplibre.android.geometry.LatLng
-import org.maplibre.android.maps.MapView
-import org.maplibre.android.maps.Style
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 import java.util.Locale
-
-private const val MAP_STYLE_URL = "https://demotiles.maplibre.org/style.json"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,15 +77,13 @@ fun TravelMapScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // ALWAYS render the MapLibre container so the interactive map is always visible
-            MapLibreContainer(
+            OsmMapContainer(
                 cityLat = latitude,
                 cityLon = longitude,
                 touristPlaces = places,
                 onPlaceSelected = { place -> selectedPlace = place }
             )
 
-            // Overlay loading progress or error banner on top of the map
             when (val state = uiState) {
                 is TravelMapUiState.Loading -> {
                     Surface(
@@ -141,7 +135,6 @@ fun TravelMapScreen(
                 else -> {}
             }
 
-            // Bottom sheet when a marker is clicked
             selectedPlace?.let { place ->
                 ModalBottomSheet(
                     onDismissRequest = { selectedPlace = null },
@@ -155,12 +148,13 @@ fun TravelMapScreen(
 }
 
 @Composable
-fun MapLibreContainer(
+fun OsmMapContainer(
     cityLat: Double,
     cityLon: Double,
     touristPlaces: List<TouristPlace>,
     onPlaceSelected: (TouristPlace) -> Unit
 ) {
+    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var mapViewRef by remember { mutableStateOf<MapView?>(null) }
 
@@ -168,61 +162,47 @@ fun MapLibreContainer(
         val observer = LifecycleEventObserver { _, event ->
             val mv = mapViewRef ?: return@LifecycleEventObserver
             when (event) {
-                Lifecycle.Event.ON_START -> mv.onStart()
                 Lifecycle.Event.ON_RESUME -> mv.onResume()
                 Lifecycle.Event.ON_PAUSE -> mv.onPause()
-                Lifecycle.Event.ON_STOP -> mv.onStop()
-                Lifecycle.Event.ON_DESTROY -> mv.onDestroy()
                 else -> {}
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+            mapViewRef?.onDetach()
         }
     }
 
     AndroidView(
         factory = { ctx ->
-            MapLibre.getInstance(ctx)
+            Configuration.getInstance().userAgentValue = "TravelExplorer-AndroidApp/1.0"
             MapView(ctx).apply {
-                onCreate(null)
-                onStart()
-                onResume()
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(true)
+                controller.setZoom(14.0)
+                controller.setCenter(GeoPoint(cityLat, cityLon))
                 mapViewRef = this
             }
         },
         modifier = Modifier.fillMaxSize(),
         update = { mv ->
-            mv.getMapAsync { map ->
-                map.setStyle(Style.Builder().fromUri(MAP_STYLE_URL)) { _ ->
-                    map.cameraPosition = CameraPosition.Builder()
-                        .target(LatLng(cityLat, cityLon))
-                        .zoom(12.0)
-                        .build()
+            mv.controller.setCenter(GeoPoint(cityLat, cityLon))
+            mv.overlays.clear()
 
-                    map.clear()
-                    val markerToPlaceMap = mutableMapOf<Long, TouristPlace>()
-
-                    touristPlaces.filter { it.latitude != 0.0 && it.longitude != 0.0 }.forEach { place ->
-                        val options = MarkerOptions()
-                            .position(LatLng(place.latitude, place.longitude))
-                            .title(place.name)
-                            .snippet(place.category)
-
-                        val marker: Marker = map.addMarker(options)
-                        markerToPlaceMap[marker.id] = place
-                    }
-
-                    map.setOnMarkerClickListener { clickedMarker ->
-                        val place = markerToPlaceMap[clickedMarker.id]
-                        if (place != null) {
-                            onPlaceSelected(place)
-                            true
-                        } else false
+            touristPlaces.filter { it.latitude != 0.0 && it.longitude != 0.0 }.forEach { place ->
+                val marker = Marker(mv).apply {
+                    position = GeoPoint(place.latitude, place.longitude)
+                    title = place.name
+                    snippet = place.category
+                    setOnMarkerClickListener { _, _ ->
+                        onPlaceSelected(place)
+                        true
                     }
                 }
+                mv.overlays.add(marker)
             }
+            mv.invalidate()
         }
     )
 }

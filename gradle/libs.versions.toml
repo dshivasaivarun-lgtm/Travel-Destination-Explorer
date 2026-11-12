@@ -15,6 +15,7 @@ glide = "4.16.0"
 glideCompose = "1.0.0-beta01"
 navigation = "2.8.7"
 maplibre = "11.5.1"
+osmdroid = "6.1.20"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +42,7 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compose = { group = "com.github.bumptech.glide", name = "compose", version.ref = "glideCompose" }
 maplibre-android-sdk = { group = "org.maplibre.gl", name = "android-sdk", version.ref = "maplibre" }
+osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
