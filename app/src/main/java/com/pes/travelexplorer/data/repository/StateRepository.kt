@@ -1,0 +1,36 @@
+package com.pes.travelexplorer.data.repository
+
+import android.util.Log
+import com.pes.travelexplorer.data.model.AdministrativeDivision
+import com.pes.travelexplorer.data.remote.PlaceDbApi
+import com.pes.travelexplorer.data.remote.PlaceDbClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+class StateRepository(
+    private val api: PlaceDbApi = PlaceDbClient.api
+) {
+    companion object {
+        private const val TAG = "StateRepository"
+    }
+
+    suspend fun getStatesForCountry(countryCode: String): Result<List<AdministrativeDivision>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val alpha2Code = if (countryCode.length == 3) {
+                    countryCode.take(2).uppercase()
+                } else {
+                    countryCode.uppercase()
+                }
+
+                val response = api.getRegions(alpha2Code)
+                val divisions = response.data ?: response.regions ?: response.items ?: emptyList()
+                Log.d(TAG, "Fetched ${divisions.size} divisions for $alpha2Code. First division: ${divisions.firstOrNull()}")
+                Result.success(divisions)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to fetch regions for $countryCode: ${e.message}", e)
+                Result.failure(e)
+            }
+        }
+    }
+}
