@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">TravelExplorer</string>
+    <string name="explore_title">Explore countries</string>
+    <string name="explore_search">Search by country name</string>
+    <string name="explore_clear_search">Clear search</string>
+    <string name="explore_region_all">All</string>
+    <string name="explore_region_africa">Africa</string>
+    <string name="explore_region_americas">Americas</string>
+    <string name="explore_region_asia">Asia</string>
+    <string name="explore_region_europe">Europe</string>
+    <string name="explore_region_oceania">Oceania</string>
+    <string name="explore_loading">Loading countries…</string>
+    <string name="explore_error">Could not load countries. Check your connection and try again. If the problem continues, check the app configuration with the team.</string>
+    <string name="explore_retry">Retry</string>
+    <string name="explore_empty_data">No countries are available. Try loading again.</string>
+    <string name="explore_no_matches">No countries match your search and region.</string>
+    <string name="explore_reset_filters">Reset filters</string>
+    <string name="explore_unknown_country">Unknown country</string>
+    <string name="explore_unknown_region">Region unavailable</string>
+    <string name="explore_details_unavailable">Details unavailable</string>
+    <string name="explore_flag_description">Flag of %1$s</string>
 </resources>
