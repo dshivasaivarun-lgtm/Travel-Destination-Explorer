@@ -1,3 +1,31 @@
+
 <resources>
     <string name="app_name">TravelExplorer</string>
+
+    <!-- Explore -->
+    <string name="explore_title">Travel Explorer</string>
+    <string name="search_countries">Search all countries...</string>
+    <string name="no_countries_found">No countries found.</string>
+
+    <!-- Wishlist -->
+    <string name="wishlist_title">My Wishlist</string>
+    <string name="add_to_wishlist">Add to wishlist</string>
+    <string name="remove_from_wishlist">Remove from wishlist</string>
+    <string name="empty_wishlist">Your wishlist is empty.</string>
+
+    <!-- Trips -->
+    <string name="trips_title">My Trips</string>
+    <string name="add_trip">Add Trip</string>
+    <string name="edit_trip">Edit Trip</string>
+    <string name="delete_trip">Delete Trip</string>
+    <string name="empty_trips">No trips planned yet.</string>
+
+    <!-- Country Details -->
+    <string name="country_details">Country Details</string>
+    <string name="view_states">View States &amp; Provinces</string>
+    <string name="official_website">Find Official Website</string>
+
+    <!-- Sharing -->
+    <string name="share_destination">Share Destination</string>
+    <string name="share_country">Share this travel destination</string>
 </resources>
