@@ -1,40 +1,36 @@
-
 package com.pes.travelexplorer.utils
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
+import com.pes.travelexplorer.R
 
 object TravelIntents {
-
-    // Intent 1: Share a travel destination
     fun shareDestination(context: Context, destination: String) {
-
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-
-            putExtra(
-                Intent.EXTRA_TEXT,
-                "Check out this travel destination: $destination"
-            )
-        }
-
-        val chooser = Intent.createChooser(
-            shareIntent,
-            "Share destination using"
-        )
-
-        context.startActivity(chooser)
+        shareText(context, context.getString(R.string.share_destination_text, destination))
     }
-
-    // Intent 2: Open a website
+    fun shareText(context: Context, text: String) {
+        launch(context, Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, text)
+        }, context.getString(R.string.share_destination)))
+    }
     fun openWebsite(context: Context, websiteUrl: String) {
-
-        val browserIntent = Intent(
-            Intent.ACTION_VIEW,
-            Uri.parse(websiteUrl)
-        )
-
-        context.startActivity(browserIntent)
+        val uri = Uri.parse(websiteUrl)
+        if (uri.scheme !in listOf("https", "http") || uri.host.isNullOrBlank()) {
+            Toast.makeText(context, R.string.external_app_unavailable, Toast.LENGTH_SHORT).show()
+            return
+        }
+        launch(context, Intent(Intent.ACTION_VIEW, uri))
+    }
+    private fun launch(context: Context, intent: Intent) {
+        try { context.startActivity(intent) }
+        catch (_: ActivityNotFoundException) {
+            Toast.makeText(context, R.string.external_app_unavailable, Toast.LENGTH_SHORT).show()
+        } catch (_: SecurityException) {
+            Toast.makeText(context, R.string.external_app_unavailable, Toast.LENGTH_SHORT).show()
+        }
     }
 }

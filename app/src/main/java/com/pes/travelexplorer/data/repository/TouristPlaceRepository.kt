@@ -17,7 +17,7 @@ class TouristPlaceRepository(
 ) {
     companion object {
         private const val TAG = "TouristPlaceRepository"
-        private val cache = mutableMapOf<String, List<TouristPlace>>()
+        private val cache = java.util.concurrent.ConcurrentHashMap<String, List<TouristPlace>>()
     }
 
     suspend fun getTouristPlaces(
@@ -55,6 +55,8 @@ class TouristPlaceRepository(
                 val places = parsePlaces(response)
                 cache[cacheKey] = places
                 return@withContext Result.success(places)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.w(TAG, "Primary Overpass server failed (${e.message}), attempting mirror server...")
                 primaryError = e
@@ -66,6 +68,8 @@ class TouristPlaceRepository(
                 val places = parsePlaces(response)
                 cache[cacheKey] = places
                 return@withContext Result.success(places)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Mirror Overpass server also failed: ${e.message}", e)
                 val err = primaryError ?: e

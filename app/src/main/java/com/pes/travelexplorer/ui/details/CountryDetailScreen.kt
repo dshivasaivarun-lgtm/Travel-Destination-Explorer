@@ -19,6 +19,10 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.pes.travelexplorer.data.model.Country
 import com.pes.travelexplorer.utils.TravelIntents
+import com.pes.travelexplorer.ui.components.DestinationPhoto
+import com.pes.travelexplorer.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalConfiguration
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -26,6 +30,9 @@ import java.util.Locale
 @Composable
 fun CountryDetailScreen(
     countryCode: String,
+    isSaved: Boolean = false,
+    onToggleSaved: (Country) -> Unit = {},
+    onPlanTrip: () -> Unit = {},
     viewModel: CountryDetailViewModel =
         androidx.lifecycle.viewmodel.compose.viewModel(),
     onBackClick: () -> Unit,
@@ -103,7 +110,8 @@ fun CountryDetailScreen(
                     CountryDetailsContent(
                         country = state.country,
                         fallbackCountryCode = countryCode,
-                        onViewStatesClick = onViewStatesClick
+                        onViewStatesClick = onViewStatesClick,
+                        isSaved = isSaved, onToggleSaved = onToggleSaved, onPlanTrip = onPlanTrip
                     )
                 }
             }
@@ -117,7 +125,10 @@ fun CountryDetailScreen(
 fun CountryDetailsContent(
     country: Country,
     fallbackCountryCode: String,
-    onViewStatesClick: (String) -> Unit
+    onViewStatesClick: (String) -> Unit,
+    isSaved: Boolean = false,
+    onToggleSaved: (Country) -> Unit = {},
+    onPlanTrip: () -> Unit = {}
 ) {
 
     val scrollState = rememberScrollState()
@@ -131,6 +142,11 @@ fun CountryDetailsContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
+        DestinationPhoto(country.codes?.alpha3, showCredits = true)
+        Button(onClick = onPlanTrip, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.plan_trip)) }
+        OutlinedButton(onClick = { onToggleSaved(country) }, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(if (isSaved) R.string.remove_from_wishlist else R.string.add_to_wishlist))
+        }
         // Country flag
         val flagUrl = country.flag?.urlPng ?: country.flag?.urlSvg
 
@@ -147,7 +163,7 @@ fun CountryDetailsContent(
                     model = flagUrl,
                     contentDescription = "Flag of ${country.names?.common}",
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Fit
                 )
             }
         }
@@ -214,7 +230,7 @@ fun CountryDetailsContent(
                 )
 
                 val formattedPopulation = country.population?.let {
-                    NumberFormat.getNumberInstance(Locale.getDefault())
+                    NumberFormat.getNumberInstance(LocalConfiguration.current.locales[0] ?: Locale.ROOT)
                         .format(it)
                 } ?: "N/A"
 
@@ -265,7 +281,7 @@ fun CountryDetailsContent(
                     .appendPath("search")
                     .appendQueryParameter(
                         "q",
-                        "official website of $countryName"
+                        "$countryName travel information"
                     )
                     .build()
                     .toString()
@@ -277,16 +293,14 @@ fun CountryDetailsContent(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Find Official Website")
+            Text(stringResource(R.string.research_destination))
         }
 
-        // View states and provinces
-        Button(
+        // Use the actual Alpha-2 field; never truncate Alpha-3.
+        Button(enabled = country.codes?.alpha2?.matches(Regex("[A-Za-z]{2}")) == true,
             onClick = {
-                val alpha2 = country.codes?.alpha2
-                    ?: fallbackCountryCode.take(2).uppercase()
-
-                onViewStatesClick(alpha2)
+                country.codes?.alpha2?.takeIf { it.matches(Regex("[A-Za-z]{2}")) }
+                    ?.let { onViewStatesClick(it.uppercase(Locale.ROOT)) }
             },
             modifier = Modifier.fillMaxWidth()
         ) {

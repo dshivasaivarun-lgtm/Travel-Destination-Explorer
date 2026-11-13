@@ -16,6 +16,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.res.stringResource
+import com.pes.travelexplorer.R
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -31,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 
@@ -41,7 +45,8 @@ import com.bumptech.glide.integration.compose.GlideImage
 @Composable
 fun WishlistScreen(
     viewModel: WishlistViewModel,
-    onCountryClick: (String) -> Unit = {}
+    onCountryClick: (String) -> Unit = {},
+    onPlanTrip: (String) -> Unit = {}
 ) {
     val wishlist by viewModel.wishlist.collectAsState()
 
@@ -77,7 +82,7 @@ fun WishlistScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
+                        painter = painterResource(R.drawable.ic_travel_empty),
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.secondary
@@ -109,7 +114,7 @@ fun WishlistScreen(
                     key = { it.cca3 }
                 ) { country ->
 
-                    Card(
+                    Card(onClick = { onCountryClick(country.cca3) },
                         modifier = Modifier.fillMaxWidth(),
                         elevation = CardDefaults.cardElevation(
                             defaultElevation = 3.dp
@@ -144,10 +149,7 @@ fun WishlistScreen(
                                     style = MaterialTheme.typography.bodySmall
                                 )
 
-                                Text(
-                                    text = country.cca3,
-                                    style = MaterialTheme.typography.labelSmall
-                                )
+                                TextButton(onClick = { onPlanTrip(country.cca3) }) { Text(stringResource(R.string.plan_trip)) }
                             }
 
                             IconButton(

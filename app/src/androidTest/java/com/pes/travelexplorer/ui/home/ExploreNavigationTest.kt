@@ -35,7 +35,7 @@ class ExploreNavigationTest {
         compose.waitUntil(timeoutMillis = 90_000) {
             compose.onAllNodesWithText("Alpha-3 Code: IND").fetchSemanticsNodes().isNotEmpty()
         }
-        compose.onNodeWithText("Alpha-3 Code: IND").assertIsDisplayed()
+        compose.onNodeWithText("Alpha-3 Code: IND").performScrollTo().assertIsDisplayed()
         saveScreenshot("details-live-ind.png")
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Search by country name").assertTextContains("iNdIa")

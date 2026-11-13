@@ -17,16 +17,15 @@ class CityRepository(
     suspend fun getCitiesForDivision(countryCode: String, admin1Id: String): Result<List<City>> {
         return withContext(Dispatchers.IO) {
             try {
-                val alpha2Code = if (countryCode.length == 3) {
-                    countryCode.take(2).uppercase()
-                } else {
-                    countryCode.uppercase()
-                }
+                require(countryCode.matches(Regex("[A-Za-z]{2}"))) { "A valid Alpha-2 country code is required" }
+                val alpha2Code = countryCode.uppercase(java.util.Locale.ROOT)
                 Log.d(TAG, "Fetching cities for country: $alpha2Code, admin1Id: $admin1Id")
                 val response = api.getCities(alpha2Code, admin1Id)
                 val cities = response.data ?: response.cities ?: response.items ?: response.objects ?: response.settlements ?: emptyList()
                 Log.d(TAG, "Fetched ${cities.size} cities for $alpha2Code / $admin1Id")
                 Result.success(cities)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to fetch cities for $countryCode / $admin1Id: ${e.message}", e)
                 Result.failure(e)

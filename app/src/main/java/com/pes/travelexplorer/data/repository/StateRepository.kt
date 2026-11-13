@@ -17,16 +17,15 @@ class StateRepository(
     suspend fun getStatesForCountry(countryCode: String): Result<List<AdministrativeDivision>> {
         return withContext(Dispatchers.IO) {
             try {
-                val alpha2Code = if (countryCode.length == 3) {
-                    countryCode.take(2).uppercase()
-                } else {
-                    countryCode.uppercase()
-                }
+                require(countryCode.matches(Regex("[A-Za-z]{2}"))) { "A valid Alpha-2 country code is required" }
+                val alpha2Code = countryCode.uppercase(java.util.Locale.ROOT)
 
                 val response = api.getRegions(alpha2Code)
                 val divisions = response.data ?: response.regions ?: response.items ?: emptyList()
                 Log.d(TAG, "Fetched ${divisions.size} divisions for $alpha2Code. First division: ${divisions.firstOrNull()}")
                 Result.success(divisions)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to fetch regions for $countryCode: ${e.message}", e)
                 Result.failure(e)

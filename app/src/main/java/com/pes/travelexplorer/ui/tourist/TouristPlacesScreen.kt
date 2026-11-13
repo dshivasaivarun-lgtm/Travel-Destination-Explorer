@@ -24,7 +24,7 @@ fun TouristPlacesScreen(
     latitude: Double,
     longitude: Double,
     viewModel: TouristPlacesViewModel = viewModel(),
-    onViewOnMapClick: (String, Double, Double) -> Unit = { _, _, _ -> },
+    onViewOnMapClick: (String, Double, Double, Int) -> Unit = { _, _, _, _ -> },
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -45,7 +45,7 @@ fun TouristPlacesScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onViewOnMapClick(cityName, latitude, longitude) }) {
+                    IconButton(onClick = { onViewOnMapClick(cityName, latitude, longitude, radiusMeters) }) {
                         Icon(imageVector = Icons.Default.Map, contentDescription = "View on Map")
                     }
                 },

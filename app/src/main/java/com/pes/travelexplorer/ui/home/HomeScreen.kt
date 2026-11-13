@@ -10,6 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import com.pes.travelexplorer.data.local.PreferencesManager
+import com.pes.travelexplorer.data.model.Country
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pes.travelexplorer.R
 import com.pes.travelexplorer.ui.components.CountryCard
@@ -17,16 +20,23 @@ import com.pes.travelexplorer.ui.components.CountrySearchBar
 import com.pes.travelexplorer.ui.components.RegionFilter
 
 @Composable
-fun HomeScreen(onCountryClick: (String) -> Unit, viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(onCountryClick: (String) -> Unit, viewModel: HomeViewModel = viewModel(),
+    savedCodes: Set<String> = emptySet(), onToggleSaved: ((Country) -> Unit)? = null) {
     val state by viewModel.uiState.collectAsState()
-    HomeContent(state, onCountryClick, viewModel::retry)
+    val context = LocalContext.current
+    val preferences = remember { PreferencesManager(context.applicationContext) }
+    val initialRegion = remember { CountryRegion.entries.firstOrNull { it.name == preferences.getRegion() } ?: CountryRegion.All }
+    HomeContent(state, onCountryClick, viewModel::retry, savedCodes, onToggleSaved,
+        initialRegion, { preferences.saveRegion(it.name) })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeContent(state: HomeUiState, onCountryClick: (String) -> Unit, onRetry: () -> Unit) {
+fun HomeContent(state: HomeUiState, onCountryClick: (String) -> Unit, onRetry: () -> Unit,
+    savedCodes: Set<String> = emptySet(), onToggleSaved: ((Country) -> Unit)? = null,
+    initialRegion: CountryRegion = CountryRegion.All, onRegionChanged: (CountryRegion) -> Unit = {}) {
     var query by rememberSaveable { mutableStateOf("") }
-    var region by rememberSaveable { mutableStateOf(CountryRegion.All) }
+    var region by rememberSaveable { mutableStateOf(initialRegion) }
 
     Scaffold(
         topBar = {
@@ -44,7 +54,7 @@ fun HomeContent(state: HomeUiState, onCountryClick: (String) -> Unit, onRetry: (
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             CountrySearchBar(query, onQueryChange = { query = it })
-            RegionFilter(region, onSelect = { region = it })
+            RegionFilter(region, onSelect = { region = it; onRegionChanged(it) })
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 when (state) {
                     HomeUiState.Loading -> Column(
@@ -72,7 +82,7 @@ fun HomeContent(state: HomeUiState, onCountryClick: (String) -> Unit, onRetry: (
                             filtered.isEmpty() -> HomeMessage(
                                 stringResource(R.string.explore_no_matches),
                                 stringResource(R.string.explore_reset_filters),
-                                { query = ""; region = CountryRegion.All }
+                                { query = ""; region = CountryRegion.All; onRegionChanged(region) }
                             )
                             else -> LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
@@ -80,7 +90,7 @@ fun HomeContent(state: HomeUiState, onCountryClick: (String) -> Unit, onRetry: (
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 items(filtered) { country ->
-                                    CountryCard(country, onCountryClick)
+                                    CountryCard(country, onCountryClick, isSaved = country.detailsCode() in savedCodes, onToggleSaved = onToggleSaved)
                                 }
                             }
                         }

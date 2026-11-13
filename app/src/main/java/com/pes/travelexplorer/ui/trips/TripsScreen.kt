@@ -27,12 +27,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.pes.travelexplorer.R
+import com.pes.travelexplorer.data.local.TripEntity
+import com.pes.travelexplorer.utils.TravelIntents
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +50,14 @@ fun TripsScreen(
     onEditTrip: (Int) -> Unit
 ) {
     val trips by viewModel.trips.collectAsState()
+    val context = LocalContext.current
+    var deleting by remember { mutableStateOf<TripEntity?>(null) }
+    deleting?.let { trip -> AlertDialog(onDismissRequest = { deleting = null },
+        title = { Text(stringResource(R.string.delete_trip_confirm)) },
+        text = { Text(stringResource(R.string.delete_trip_message)) },
+        confirmButton = { TextButton(onClick = { viewModel.deleteTrip(trip); deleting = null }) { Text(stringResource(R.string.delete)) } },
+        dismissButton = { TextButton(onClick = { deleting = null }) { Text(stringResource(R.string.cancel)) } }) }
+
 
     Scaffold(
         topBar = {
@@ -79,7 +95,7 @@ fun TripsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Flight,
+                        painter = painterResource(R.drawable.ic_travel_empty),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -143,7 +159,7 @@ fun TripsScreen(
                                 }
 
                                 IconButton(
-                                    onClick = { viewModel.deleteTrip(trip) }
+                                    onClick = { deleting = trip }
                                 ) {
                                     Icon(
                                         Icons.Default.Delete,
@@ -157,7 +173,10 @@ fun TripsScreen(
 
                             Text("Start: ${trip.startDate}")
                             Text("End: ${trip.endDate}")
-                            Text("Country code: ${trip.destinationCountryCode}")
+                            TextButton(onClick = { TravelIntents.shareText(context,
+                                "${trip.title} — ${trip.destinationCountryName}\n${trip.startDate} – ${trip.endDate}\n${trip.notes}") }) {
+                                Text(stringResource(R.string.share_trip))
+                            }
 
                             if (trip.notes.isNotBlank()) {
                                 Spacer(modifier = Modifier.height(8.dp))

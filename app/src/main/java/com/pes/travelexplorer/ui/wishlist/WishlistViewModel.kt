@@ -9,10 +9,22 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class WishlistViewModel(
     private val repository: WishlistRepository
 ) : ViewModel() {
+    private val _error = MutableStateFlow<String?>(null)
+    val error = _error.asStateFlow()
+    fun clearError() { _error.value = null }
+    private suspend fun safely(block: suspend () -> Unit) {
+        try { block() }
+        catch (e: CancellationException) { throw e }
+        catch (_: Exception) { _error.value = "storage" }
+    }
+
 
     // Observe saved countries
     val wishlist: StateFlow<List<WishlistEntity>> =
@@ -25,14 +37,14 @@ class WishlistViewModel(
     // Add country
     fun addCountry(country: WishlistEntity) {
         viewModelScope.launch {
-            repository.addToWishlist(country)
+            safely { repository.addToWishlist(country) }
         }
     }
 
     // Remove country
     fun removeCountry(countryCode: String) {
         viewModelScope.launch {
-            repository.removeFromWishlist(countryCode)
+            safely { repository.removeFromWishlist(countryCode) }
         }
     }
 
@@ -49,7 +61,7 @@ class WishlistViewModel(
     // Clear wishlist
     fun clearWishlist() {
         viewModelScope.launch {
-            repository.clearWishlist()
+            safely { repository.clearWishlist() }
         }
     }
 }

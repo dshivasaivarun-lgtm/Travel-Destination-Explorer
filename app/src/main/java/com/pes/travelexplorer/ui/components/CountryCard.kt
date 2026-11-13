@@ -9,6 +9,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.filled.Share
+import com.pes.travelexplorer.utils.TravelIntents
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
@@ -19,7 +25,8 @@ import com.pes.travelexplorer.ui.home.detailsCode
 /** Extracted from the original navigation screen; uses the shared v5 Country model. */
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun CountryCard(country: Country, onCountryClick: (String) -> Unit, modifier: Modifier = Modifier) {
+fun CountryCard(country: Country, onCountryClick: (String) -> Unit, modifier: Modifier = Modifier, isSaved: Boolean = false, onToggleSaved: ((Country) -> Unit)? = null) {
+    val context = LocalContext.current
     val code = country.detailsCode()
     val name = country.names?.common?.takeIf { it.isNotBlank() }
         ?: stringResource(R.string.explore_unknown_country)
@@ -29,6 +36,7 @@ fun CountryCard(country: Country, onCountryClick: (String) -> Unit, modifier: Mo
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
+        DestinationPhoto(code)
         Row(
             modifier = Modifier.padding(12.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -54,6 +62,16 @@ fun CountryCard(country: Country, onCountryClick: (String) -> Unit, modifier: Mo
                 if (code == null) {
                     Text(stringResource(R.string.explore_details_unavailable), style = MaterialTheme.typography.bodySmall)
                 }
+            }
+        }
+        if (onToggleSaved != null) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            TextButton(onClick = { TravelIntents.shareDestination(context, name) }) {
+                Icon(Icons.Default.Share, contentDescription = null)
+                Text(stringResource(R.string.share_destination))
+            }
+            TextButton(enabled = code != null, onClick = { onToggleSaved(country) }) {
+                Icon(if (isSaved) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = null)
+                Text(stringResource(if (isSaved) R.string.remove_from_wishlist else R.string.add_to_wishlist))
             }
         }
     }

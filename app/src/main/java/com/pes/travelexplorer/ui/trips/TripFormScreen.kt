@@ -1,207 +1,99 @@
-
 package com.pes.travelexplorer.ui.trips
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pes.travelexplorer.R
 import com.pes.travelexplorer.data.local.TripEntity
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TripFormScreen(
-    existingTrip: TripEntity? = null,
-    onSave: (TripEntity) -> Unit,
-    onCancel: () -> Unit
-) {
-    var title by remember(existingTrip?.id) {
-        mutableStateOf(existingTrip?.title ?: "")
-    }
-
-    var countryName by remember(existingTrip?.id) {
-        mutableStateOf(existingTrip?.destinationCountryName ?: "")
-    }
-
-    var countryCode by remember(existingTrip?.id) {
-        mutableStateOf(existingTrip?.destinationCountryCode ?: "")
-    }
-
-    var startDate by remember(existingTrip?.id) {
-        mutableStateOf(existingTrip?.startDate ?: "")
-    }
-
-    var endDate by remember(existingTrip?.id) {
-        mutableStateOf(existingTrip?.endDate ?: "")
-    }
-
-    var notes by remember(existingTrip?.id) {
-        mutableStateOf(existingTrip?.notes ?: "")
-    }
-
-    var errorMessage by remember {
-        mutableStateOf<String?>(null)
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        if (existingTrip == null) {
-                            "Plan a New Trip"
-                        } else {
-                            "Edit Trip"
-                        }
-                    )
-                }
-            )
+fun TripFormScreen(existingTrip: TripEntity? = null, onSave: (TripEntity) -> Unit,
+    onCancel: () -> Unit, destinations: List<Pair<String, String>> = emptyList(),
+    initialCountryCode: String = "", saving: Boolean = false, saveFailed: Boolean = false,
+    loadingDestinations: Boolean = false, destinationLoadFailed: Boolean = false,
+    onRetryDestinations: () -> Unit = {}) {
+    BackHandler(enabled = saving) { /* Do not navigate away during the pending write. */ }
+    var title by rememberSaveable(existingTrip?.id) { mutableStateOf(existingTrip?.title.orEmpty()) }
+    var code by rememberSaveable(existingTrip?.id) { mutableStateOf(existingTrip?.destinationCountryCode ?: initialCountryCode) }
+    var start by rememberSaveable(existingTrip?.id) { mutableStateOf(existingTrip?.startDate.orEmpty()) }
+    var end by rememberSaveable(existingTrip?.id) { mutableStateOf(existingTrip?.endDate.orEmpty()) }
+    var notes by rememberSaveable(existingTrip?.id) { mutableStateOf(existingTrip?.notes.orEmpty()) }
+    var invalid by rememberSaveable { mutableStateOf(false) }
+    var selectingCountry by remember { mutableStateOf(false) }
+    var selectingDate by remember { mutableStateOf<String?>(null) }
+    val destinationName = destinations.firstOrNull { it.first == code }?.second
+        ?: existingTrip?.takeIf { it.destinationCountryCode == code }?.destinationCountryName
+    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(if (existingTrip == null) R.string.plan_trip else R.string.edit_trip)) }) }) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedTextField(title, { title = it }, label = { Text(stringResource(R.string.trip_title)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = !saving)
+            OutlinedButton(onClick = { selectingCountry = true }, enabled = !saving, modifier = Modifier.fillMaxWidth()) {
+                Text(destinationName ?: stringResource(R.string.country_selection))
+            }
+            if (loadingDestinations) LinearProgressIndicator(Modifier.fillMaxWidth())
+            if (destinationLoadFailed) {
+                Text(stringResource(R.string.no_destinations))
+                TextButton(onClick = onRetryDestinations, enabled = !loadingDestinations) { Text(stringResource(R.string.retry)) }
+            }
+            OutlinedButton(onClick = { selectingDate = "start" }, enabled = !saving, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.start_date) + ": " + start.ifBlank { stringResource(R.string.select_date) })
+            }
+            OutlinedButton(onClick = { selectingDate = "end" }, enabled = !saving, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.end_date) + ": " + end.ifBlank { stringResource(R.string.select_date) })
+            }
+            OutlinedTextField(notes, { notes = it }, label = { Text(stringResource(R.string.notes)) }, modifier = Modifier.fillMaxWidth(), minLines = 3, enabled = !saving)
+            if (invalid) Text(stringResource(R.string.trip_form_error), color = MaterialTheme.colorScheme.error)
+            if (saveFailed) Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
+            Button(enabled = !saving, modifier = Modifier.fillMaxWidth(), onClick = {
+                invalid = title.isBlank() || destinationName.isNullOrBlank() ||
+                    !code.matches(Regex("[A-Z]{3}")) || !validTripDates(start, end)
+                if (!invalid) onSave(TripEntity(existingTrip?.id ?: 0, title.trim(), code,
+                    destinationName.orEmpty(), start, end, notes.trim()))
+            }) {
+                if (saving) CircularProgressIndicator(Modifier.size(20.dp))
+                else Text(stringResource(if (existingTrip == null) R.string.save_trip else R.string.update_trip))
+            }
+            TextButton(onClick = onCancel, enabled = !saving, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.cancel)) }
         }
-    ) { paddingValues ->
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("Trip Title") },
-                placeholder = { Text("Example: Summer Vacation") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            OutlinedTextField(
-                value = countryName,
-                onValueChange = { countryName = it },
-                label = { Text("Destination Country") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            OutlinedTextField(
-                value = countryCode,
-                onValueChange = {
-                    countryCode = it.uppercase().take(3)
-                },
-                label = { Text("Country Code (Alpha-3)") },
-                placeholder = { Text("Example: IND") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            OutlinedTextField(
-                value = startDate,
-                onValueChange = { startDate = it },
-                label = { Text("Start Date") },
-                placeholder = { Text("YYYY-MM-DD") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            OutlinedTextField(
-                value = endDate,
-                onValueChange = { endDate = it },
-                label = { Text("End Date") },
-                placeholder = { Text("YYYY-MM-DD") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            OutlinedTextField(
-                value = notes,
-                onValueChange = { notes = it },
-                label = { Text("Notes (Optional)") },
-                placeholder = { Text("Write your travel plans...") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3
-            )
-
-            if (errorMessage != null) {
-                Text(
-                    text = errorMessage!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Button(
-                onClick = {
-                    val validDateFormat =
-                        Regex("""\d{4}-\d{2}-\d{2}""")
-
-                    when {
-                        title.isBlank() ->
-                            errorMessage = "Please enter a trip title."
-
-                        countryName.isBlank() ->
-                            errorMessage = "Please enter a destination."
-
-                        !countryCode.matches(Regex("[A-Z]{3}")) ->
-                            errorMessage = "Enter a valid 3-letter country code."
-
-                        !validDateFormat.matches(startDate) ||
-                                !validDateFormat.matches(endDate) ->
-                            errorMessage = "Dates must use YYYY-MM-DD format."
-
-                        startDate > endDate ->
-                            errorMessage = "End date cannot be before start date."
-
-                        else -> {
-                            errorMessage = null
-
-                            onSave(
-                                TripEntity(
-                                    id = existingTrip?.id ?: 0,
-                                    title = title.trim(),
-                                    destinationCountryCode = countryCode,
-                                    destinationCountryName = countryName.trim(),
-                                    startDate = startDate,
-                                    endDate = endDate,
-                                    notes = notes.trim()
-                                )
-                            )
-                        }
+    }
+    if (selectingCountry) {
+        var query by remember { mutableStateOf("") }
+        AlertDialog(onDismissRequest = { selectingCountry = false }, title = { Text(stringResource(R.string.country_selection)) },
+            text = { Column {
+                OutlinedTextField(query, { query = it }, label = { Text(stringResource(R.string.explore_search)) }, singleLine = true)
+                LazyColumn(Modifier.heightIn(max = 320.dp)) {
+                    items(destinations.filter { it.second.contains(query, true) }, key = { it.first }) { destination ->
+                        TextButton(onClick = { code = destination.first; selectingCountry = false }) { Text(destination.second) }
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    if (existingTrip == null) "Save Trip"
-                    else "Update Trip"
-                )
-            }
-
-            TextButton(
-                onClick = onCancel,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Cancel")
-            }
+                }
+            } }, confirmButton = { TextButton(onClick = { selectingCountry = false }) { Text(stringResource(R.string.cancel)) } })
+    }
+    selectingDate?.let { which ->
+        val picker = rememberDatePickerState()
+        DatePickerDialog(onDismissRequest = { selectingDate = null }, confirmButton = {
+            TextButton(enabled = picker.selectedDateMillis != null, onClick = {
+                picker.selectedDateMillis?.let { millis ->
+                    val value = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).apply { timeZone = TimeZone.getTimeZone("UTC") }.format(Date(millis))
+                    if (which == "start") start = value else end = value
+                }
+                selectingDate = null
+            }) { Text(stringResource(R.string.confirm)) }
+        }, dismissButton = { TextButton(onClick = { selectingDate = null }) { Text(stringResource(R.string.cancel)) } }) {
+            DatePicker(picker)
         }
     }
 }

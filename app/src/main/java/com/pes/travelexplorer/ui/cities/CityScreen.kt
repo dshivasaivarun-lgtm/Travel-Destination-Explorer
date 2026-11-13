@@ -121,9 +121,10 @@ fun CityItemCard(city: City, onTouristPlacesClick: (String, Double, Double) -> U
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                val lat = city.latitude ?: 12.9716
-                val lon = city.longitude ?: 77.5946
+            .clickable(enabled = city.latitude != null && city.longitude != null &&
+                com.pes.travelexplorer.utils.validCoordinates(city.latitude, city.longitude)) {
+                val lat = city.latitude ?: return@clickable
+                val lon = city.longitude ?: return@clickable
                 onTouristPlacesClick(city.name ?: "City", lat, lon)
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

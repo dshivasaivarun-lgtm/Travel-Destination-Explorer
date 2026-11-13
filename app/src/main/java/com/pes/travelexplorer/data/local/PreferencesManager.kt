@@ -33,4 +33,9 @@ class PreferencesManager(context: Context) {
     fun isDarkModeEnabled(): Boolean {
         return preferences.getBoolean("dark_mode", false)
     }
+    fun saveRegion(region: String) {
+        preferences.edit().putString("explore_region", region).apply()
+    }
+
+    fun getRegion(): String = preferences.getString("explore_region", "All") ?: "All"
 }
