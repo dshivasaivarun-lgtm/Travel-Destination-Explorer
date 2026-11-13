@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -139,7 +140,8 @@ fun CityItemCard(city: City, onTouristPlacesClick: (String, Double, Double) -> U
                 fontWeight = FontWeight.Bold
             )
             if (city.population != null) {
-                val formattedPop = NumberFormat.getNumberInstance(Locale.getDefault()).format(city.population)
+                val locale = LocalConfiguration.current.locales[0] ?: Locale.ROOT
+                val formattedPop = NumberFormat.getNumberInstance(locale).format(city.population)
                 Text(
                     text = "Population: $formattedPop",
                     style = MaterialTheme.typography.bodyMedium
