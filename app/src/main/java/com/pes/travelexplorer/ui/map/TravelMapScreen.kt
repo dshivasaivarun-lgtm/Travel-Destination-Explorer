@@ -29,6 +29,7 @@ fun TravelMapScreen(
     cityName: String,
     latitude: Double,
     longitude: Double,
+    radiusMeters: Int = 5000,
     viewModel: TravelMapViewModel = viewModel(),
     onBackClick: () -> Unit
 ) {
@@ -36,8 +37,8 @@ fun TravelMapScreen(
     var selectedPlace by remember { mutableStateOf<TouristPlace?>(null) }
     val sheetState = rememberModalBottomSheetState()
 
-    LaunchedEffect(latitude, longitude) {
-        viewModel.loadMapData(latitude, longitude)
+    LaunchedEffect(latitude, longitude, radiusMeters) {
+        viewModel.loadMapData(latitude, longitude, radiusMeters)
     }
 
     val places = (uiState as? TravelMapUiState.Success)?.places ?: emptyList()
@@ -45,7 +46,7 @@ fun TravelMapScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Map - $cityName") },
+                title = { Text("Map - $cityName · ${radiusMeters / 1000} km") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -124,7 +125,7 @@ fun TravelMapScreen(
                                 modifier = Modifier.weight(1f, fill = false)
                             )
                             Button(
-                                onClick = { viewModel.loadMapData(latitude, longitude) },
+                                onClick = { viewModel.loadMapData(latitude, longitude, radiusMeters) },
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                             ) {
                                 Text("Retry")
@@ -190,7 +191,7 @@ fun OsmMapContainer(
             mv.controller.setCenter(GeoPoint(cityLat, cityLon))
             mv.overlays.clear()
 
-            touristPlaces.filter { it.latitude != 0.0 && it.longitude != 0.0 }.forEach { place ->
+            touristPlaces.filter { com.pes.travelexplorer.utils.validCoordinates(it.latitude, it.longitude) }.forEach { place ->
                 val marker = Marker(mv).apply {
                     position = GeoPoint(place.latitude, place.longitude)
                     title = place.name

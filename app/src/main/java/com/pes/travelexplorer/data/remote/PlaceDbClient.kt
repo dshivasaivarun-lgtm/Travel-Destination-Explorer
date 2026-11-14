@@ -15,11 +15,6 @@ object PlaceDbClient {
         val request = chain.request()
         Log.d(TAG, "Sending request to: ${request.url}")
         val response = chain.proceed(request)
-        val bodyString = response.peekBody(2 * 1024 * 1024).string()
-        Log.d(TAG, "Response status=${response.code} for ${request.url}")
-        bodyString.chunked(3000).forEach { chunk ->
-            Log.d(TAG, "BODY: $chunk")
-        }
         response
     }
 
