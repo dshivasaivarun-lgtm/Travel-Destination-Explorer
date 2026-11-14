@@ -43,7 +43,7 @@ for name,role in [('Ravitejas','Explore/Home, shared navigation, integration and
 y=heading('Implementation in this integration',y)
 y=para('Country search plus region filters; 12 curated destination photos with attribution; save/remove wishlist; create/read/edit/delete trips; destination prefill; date pickers and strict validation; persisted Explore region; browser research and sharing; complete country pagination and safer geographic navigation.',y)
 y=heading('Review status',y)
-y=para('PR #2 and PR #3 are combined with original author history preserved. The integration is prepared on a separate codex branch for team review. Existing PRs have not been automatically merged or closed. Student identifiers and final institutional formatting should be added by the team before submitting a final report.',y)
+y=para('PR #2 and PR #3 are combined with original author history preserved. The integration is prepared on a separate integration branch for team review. Existing PRs have not been automatically merged or closed. Student identifiers and final institutional formatting should be added by the team before submitting a final report.',y)
 y=para('<b>Limitations:</b> this is a review report, not a claim of completed physical-device verification. Photos cover twelve featured countries. APIs, photos and map tiles require connectivity. Saved country/trip text remains local. Optional features are deferred.',y)
 c.showPage()
 begin('Verification and requirement coverage')

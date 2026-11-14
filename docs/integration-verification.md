@@ -1,6 +1,6 @@
 # Integration verification
 
-Source: `codex/mandatory-integration`, combining PR #2 at `27e612b` and PR #3 at `8bbeef0` with focused integration/correctness changes. Remote heads were checked again before publication and remained unchanged. No existing PR was merged on GitHub.
+Source: `integration/mandatory-features`, combining PR #2 at `27e612b` and PR #3 at `8bbeef0` with focused integration/correctness changes. Remote heads were checked again before publication and remained unchanged. No existing PR was merged on GitHub.
 
 ## Automated checks
 

@@ -2,6 +2,12 @@
 
 The integration branch combines PR #2 (Ravitejas Explore) and PR #3 (Gowtham Room/Wishlist/Trips) without squashing or replacing their author history. Varun's API/details/maps module remains the foundation from main. Existing PRs are not automatically merged or closed.
 
+## Implementation status
+
+The mandatory coding work is already implemented in the integration branch and its review PR. Issues #4 and #7 track acceptance/merge of that implementation, not a second round of feature building. Gowtham's Room/Wishlist/Trips foundation came from PR #3; Varun's API/map foundation came from main. Integration added cross-module navigation, remaining required features, focused corrections and tests while retaining that history.
+
+Issues #5 and #6 are owner verification and fixes for any defects found. Issue #8 covers the shared physical-device demonstration, complete submission video/report and viva. Once review, necessary fixes, merge and final delivery checks pass, the mandatory MVP is complete. Further features are a separate optional backlog.
+
 ## Ownership and effort estimates
 
 These are review/verification estimates for human teammates, not promised availability. The integration PR prepares the code so owners can review one concrete result rather than implement the same changes independently.
