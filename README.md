@@ -32,6 +32,6 @@ Connected live tests require a working key and network. A test skipped for missi
 - Dharoor Shiva Sai Varun: API/details and geographic/map exploration.
 - Gowtham B: Room, Wishlist and Trips foundation.
 
-[Current MVP release status](docs/release-status.md) · [Integration verification and artifacts](docs/integration-verification.md) · [Review PDF](docs/integration-review.pdf) · [Emulator preview](docs/video/integration-preview.mp4) · [Integration ownership, release checklist and viva script](docs/integration-handoff.md) · [Photo sources and licenses](docs/photo-credits.md) · [Phase 1 verification](docs/phase1-explore.md)
+[Current release status](docs/release-status.md) · [Project report](docs/project-report.pdf) · [Submission recording](docs/video/submission-demo.mp4) · [Final verification](docs/submission-verification.md) · [Phone demonstration](docs/phone-demonstration.md) · [Submission/viva guide](docs/submission-guide.md) · [Photo sources and licenses](docs/photo-credits.md) · [Optional destination estimate](docs/destination-selection-estimate.md)
 
-The integration branch contains both feature PR histories for review. Existing feature PRs are not automatically merged. Physical-device verification and final video/PDF submission are tracked in issue #8; see the integration verification notes for actual automated results and any emulator artifacts.
+PR #10 and the owner fixes are merged into main, retaining both feature PR histories. Mandatory implementation is complete. The physical-phone demonstration and individual viva remain team responsibilities under issue #8; see the release status for actual verification results. Older integration-review artifacts are retained as historical evidence.

@@ -1,0 +1,5 @@
+Production source: main 223f875 plus the release city-card test correction. Date: 16 November 2026.
+Final command: assembleDebug, testDebugUnitTest, lintDebug and connectedDebugAndroidTest. BUILD SUCCESSFUL in 8m 11s.
+26 unit tests and 19 emulator tests passed; zero failures, errors or skips. Lint: zero errors, 55 warnings and one hint.
+Emulator: Travel_Phase1_API37, Android 17 / API 37. Physical-phone demonstration remains pending Ravitejas's run.
+Live app: India/Karnataka/Bengaluru, 5 km attractions, map tiles/markers and Ambedkar Statue details displayed. A 3 km request failed with retry available; cached 5 km results remained usable.
