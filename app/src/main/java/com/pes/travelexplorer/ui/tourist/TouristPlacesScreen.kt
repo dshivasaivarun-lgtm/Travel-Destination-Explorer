@@ -38,7 +38,7 @@ fun TouristPlacesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nearby Places in $cityName") },
+                title = { Text("Tourist Attractions in $cityName") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -80,7 +80,7 @@ fun TouristPlacesScreen(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search nearby places...") },
+                placeholder = { Text("Search tourist attractions...") },
                 leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
                 singleLine = true
             )
@@ -123,7 +123,7 @@ fun TouristPlacesScreen(
                 }
                 is TouristPlacesUiState.Empty -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "No nearby places found within ${radiusMeters / 1000}km of $cityName.")
+                        Text(text = "No tourist attractions found within this radius.")
                     }
                 }
                 is TouristPlacesUiState.Success -> {
@@ -131,7 +131,7 @@ fun TouristPlacesScreen(
 
                     if (filtered.isEmpty()) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = "No matching nearby places found.")
+                            Text(text = "No matching tourist attractions found.")
                         }
                     } else {
                         LazyColumn(

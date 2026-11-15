@@ -48,7 +48,7 @@ fun TravelMapScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Places on Map - $cityName · ${radiusMeters / 1000} km") },
+                title = { Text("Tourist Attractions on Map - $cityName · ${radiusMeters / 1000} km") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -89,7 +89,7 @@ fun TravelMapScreen(
 
             if (uiState is TravelMapUiState.Success && places.isEmpty()) {
                 Text(
-                    text = "No matching nearby places found.",
+                    text = "No matching tourist attractions found.",
                     modifier = Modifier.align(Alignment.TopCenter).padding(16.dp),
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -110,7 +110,7 @@ fun TravelMapScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                            Text("Loading nearby places...", style = MaterialTheme.typography.bodyMedium)
+                            Text("Loading tourist attractions...", style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
@@ -129,7 +129,7 @@ fun TravelMapScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Nearby places unavailable",
+                                text = "Tourist attractions unavailable",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 modifier = Modifier.weight(1f, fill = false)
