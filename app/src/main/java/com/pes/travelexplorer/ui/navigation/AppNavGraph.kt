@@ -181,19 +181,21 @@ fun AppNavGraph() {
                         latitude = lat,
                         longitude = lon,
                         onBackClick = { navController.popBackStack() },
-                        onViewOnMapClick = { name, latitude, longitude, radius ->
+                        onViewOnMapClick = { name, latitude, longitude, radius, query ->
                             val enc = URLEncoder.encode(name, StandardCharsets.UTF_8.toString())
-                            navController.navigate("map/$enc/$latitude/$longitude?radius=$radius")
+                            val encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString())
+                            navController.navigate("map/$enc/$latitude/$longitude?radius=$radius&query=$encodedQuery")
                         }
                     )
                 }
                 composable(
-                    route = "map/{cityName}/{lat}/{lon}?radius={radius}",
+                    route = "map/{cityName}/{lat}/{lon}?radius={radius}&query={query}",
                     arguments = listOf(
                         navArgument("cityName") { type = NavType.StringType },
                         navArgument("lat") { type = NavType.StringType },
                         navArgument("lon") { type = NavType.StringType },
-                        navArgument("radius") { type = NavType.IntType; defaultValue = 5000 }
+                        navArgument("radius") { type = NavType.IntType; defaultValue = 5000 },
+                        navArgument("query") { type = NavType.StringType; defaultValue = "" }
                     )
                 ) { backStackEntry ->
                     val encodedCity = backStackEntry.arguments?.getString("cityName") ?: "City"
@@ -209,6 +211,7 @@ fun AppNavGraph() {
                         latitude = lat,
                         longitude = lon,
                         radiusMeters = backStackEntry.arguments?.getInt("radius") ?: 5000,
+                        query = URLDecoder.decode(backStackEntry.arguments?.getString("query").orEmpty(), StandardCharsets.UTF_8.toString()),
                         onBackClick = { navController.popBackStack() }
                     )
                 }

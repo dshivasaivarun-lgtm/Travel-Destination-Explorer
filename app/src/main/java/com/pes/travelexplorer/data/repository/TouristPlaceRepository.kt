@@ -88,6 +88,9 @@ class TouristPlaceRepository(
     private fun parsePlaces(response: OverpassResponse): List<TouristPlace> {
         val elements = response.elements ?: emptyList()
         return elements.mapNotNull { element ->
+            val osmType = element.type?.takeIf { it in setOf("node", "way", "relation") }
+                ?: return@mapNotNull null
+            val id = element.id ?: return@mapNotNull null
             val tags = element.tags ?: emptyMap()
             val name = tags["name"] ?: return@mapNotNull null
 
@@ -101,7 +104,8 @@ class TouristPlaceRepository(
             val openingHours = tags["opening_hours"]
 
             TouristPlace(
-                id = element.id ?: 0L,
+                osmType = osmType,
+                id = id,
                 name = name,
                 category = category.replaceFirstChar { it.uppercase() },
                 latitude = latitude,
@@ -110,6 +114,6 @@ class TouristPlaceRepository(
                 website = website,
                 openingHours = openingHours
             )
-        }.distinctBy { it.id }
+        }.distinctBy { it.osmType to it.id }
     }
 }

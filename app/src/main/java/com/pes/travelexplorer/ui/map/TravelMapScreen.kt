@@ -16,6 +16,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pes.travelexplorer.data.model.TouristPlace
+import com.pes.travelexplorer.ui.tourist.filterNearbyPlaces
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -30,6 +31,7 @@ fun TravelMapScreen(
     latitude: Double,
     longitude: Double,
     radiusMeters: Int = 5000,
+    query: String = "",
     viewModel: TravelMapViewModel = viewModel(),
     onBackClick: () -> Unit
 ) {
@@ -41,12 +43,12 @@ fun TravelMapScreen(
         viewModel.loadMapData(latitude, longitude, radiusMeters)
     }
 
-    val places = (uiState as? TravelMapUiState.Success)?.places ?: emptyList()
+    val places = filterNearbyPlaces((uiState as? TravelMapUiState.Success)?.places.orEmpty(), query)
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Map - $cityName · ${radiusMeters / 1000} km") },
+                title = { Text("Places on Map - $cityName · ${radiusMeters / 1000} km") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -85,6 +87,14 @@ fun TravelMapScreen(
                 onPlaceSelected = { place -> selectedPlace = place }
             )
 
+            if (uiState is TravelMapUiState.Success && places.isEmpty()) {
+                Text(
+                    text = "No matching nearby places found.",
+                    modifier = Modifier.align(Alignment.TopCenter).padding(16.dp),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
             when (val state = uiState) {
                 is TravelMapUiState.Loading -> {
                     Surface(
@@ -100,7 +110,7 @@ fun TravelMapScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                            Text("Loading attractions...", style = MaterialTheme.typography.bodyMedium)
+                            Text("Loading nearby places...", style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
@@ -119,7 +129,7 @@ fun TravelMapScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Attractions unavailable",
+                                text = "Nearby places unavailable",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 modifier = Modifier.weight(1f, fill = false)

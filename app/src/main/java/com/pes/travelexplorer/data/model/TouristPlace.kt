@@ -8,6 +8,9 @@ data class OverpassResponse(
 )
 
 data class OverpassElement(
+    @SerializedName("type")
+    val type: String?,
+
     @SerializedName("id")
     val id: Long?,
 
@@ -33,6 +36,7 @@ data class OverpassCenter(
 )
 
 data class TouristPlace(
+    val osmType: String,
     val id: Long,
     val name: String,
     val category: String,

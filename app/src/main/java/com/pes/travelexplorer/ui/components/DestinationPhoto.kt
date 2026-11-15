@@ -29,7 +29,7 @@ fun DestinationPhoto(code: String?, showCredits: Boolean = false) {
             modifier = Modifier.fillMaxWidth().height(if (showCredits) 210.dp else 130.dp),
             contentScale = ContentScale.Crop,
             loading = placeholder(android.R.drawable.ic_menu_gallery),
-            failure = placeholder(android.R.drawable.ic_menu_gallery))
+            failure = placeholder { PhotoUnavailable(showCredits) })
         Text(stringResource(R.string.featured_photo, photo.caption), style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
         if (showCredits) {
@@ -38,5 +38,12 @@ fun DestinationPhoto(code: String?, showCredits: Boolean = false) {
                 Text(stringResource(R.string.photo_source))
             }
         }
+    }
+}
+
+@Composable
+private fun PhotoUnavailable(showCredits: Boolean) {
+    Box(Modifier.fillMaxWidth().height(if (showCredits) 210.dp else 130.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
+        Text(stringResource(R.string.photo_unavailable), style = MaterialTheme.typography.bodyMedium)
     }
 }
