@@ -24,7 +24,7 @@ fun TouristPlacesScreen(
     latitude: Double,
     longitude: Double,
     viewModel: TouristPlacesViewModel = viewModel(),
-    onViewOnMapClick: (String, Double, Double) -> Unit = { _, _, _ -> },
+    onViewOnMapClick: (String, Double, Double, Int, String) -> Unit = { _, _, _, _, _ -> },
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -38,15 +38,15 @@ fun TouristPlacesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Attractions in $cityName") },
+                title = { Text("Tourist Attractions in $cityName") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onViewOnMapClick(cityName, latitude, longitude) }) {
-                        Icon(imageVector = Icons.Default.Map, contentDescription = "View on Map")
+                    IconButton(onClick = { onViewOnMapClick(cityName, latitude, longitude, radiusMeters, searchQuery) }) {
+                        Icon(imageVector = Icons.Default.Map, contentDescription = "Places on Map")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -80,7 +80,7 @@ fun TouristPlacesScreen(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search attractions...") },
+                placeholder = { Text("Search tourist attractions...") },
                 leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
                 singleLine = true
             )
@@ -123,18 +123,15 @@ fun TouristPlacesScreen(
                 }
                 is TouristPlacesUiState.Empty -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "No tourist attractions found within ${radiusMeters / 1000}km of $cityName.")
+                        Text(text = "No tourist attractions found within this radius.")
                     }
                 }
                 is TouristPlacesUiState.Success -> {
-                    val filtered = state.places.filter {
-                        it.name.contains(searchQuery, ignoreCase = true) ||
-                        it.category.contains(searchQuery, ignoreCase = true)
-                    }
+                    val filtered = filterNearbyPlaces(state.places, searchQuery)
 
                     if (filtered.isEmpty()) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = "No matching tourist places found.")
+                            Text(text = "No matching tourist attractions found.")
                         }
                     } else {
                         LazyColumn(

@@ -3,6 +3,7 @@ package com.pes.travelexplorer.data.remote
 import com.pes.travelexplorer.data.model.CountryResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface CountryApi {
     @GET("all")
@@ -15,5 +16,7 @@ interface CountryApi {
     suspend fun getCountryByCode(@Path("code") code: String): CountryResponse
 
     @GET("region/{region}")
-    suspend fun getCountriesByRegion(@Path("region") region: String): CountryResponse
+    suspend fun getCountriesByRegion(@Path("region") region: String,
+        @Query("limit") limit: Int = 100,
+        @Query("offset") offset: Int = 0): CountryResponse
 }

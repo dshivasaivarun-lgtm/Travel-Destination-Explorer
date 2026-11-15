@@ -5,6 +5,7 @@ import com.pes.travelexplorer.data.model.OverpassResponse
 import com.pes.travelexplorer.data.model.TouristPlace
 import com.pes.travelexplorer.data.remote.OverpassApi
 import com.pes.travelexplorer.data.remote.OverpassClient
+import com.pes.travelexplorer.utils.validCoordinates
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -17,7 +18,13 @@ class TouristPlaceRepository(
 ) {
     companion object {
         private const val TAG = "TouristPlaceRepository"
-        private val cache = mutableMapOf<String, List<TouristPlace>>()
+        private val cache = java.util.concurrent.ConcurrentHashMap<String, List<TouristPlace>>()
+        private val tourismCategories = setOf(
+            "attraction", "museum", "viewpoint", "artwork", "gallery", "zoo", "theme_park", "aquarium"
+        )
+        private val historicCategories = setOf(
+            "monument", "memorial", "castle", "archaeological_site", "fort"
+        )
     }
 
     suspend fun getTouristPlaces(
@@ -35,12 +42,8 @@ class TouristPlaceRepository(
             val query = """
                 [out:json][timeout:35];
                 (
-                  node(around:$radiusMeters,$lat,$lon)[tourism];
-                  node(around:$radiusMeters,$lat,$lon)[historic];
-                  node(around:$radiusMeters,$lat,$lon)[leisure=park];
-                  way(around:$radiusMeters,$lat,$lon)[tourism];
-                  way(around:$radiusMeters,$lat,$lon)[historic];
-                  way(around:$radiusMeters,$lat,$lon)[leisure=park];
+                  nwr(around:$radiusMeters,$lat,$lon)[tourism~"^(attraction|museum|viewpoint|artwork|gallery|zoo|theme_park|aquarium)$"];
+                  nwr(around:$radiusMeters,$lat,$lon)[historic~"^(monument|memorial|castle|archaeological_site|fort)$"];
                 );
                 out center;
             """.trimIndent()
@@ -55,6 +58,8 @@ class TouristPlaceRepository(
                 val places = parsePlaces(response)
                 cache[cacheKey] = places
                 return@withContext Result.success(places)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.w(TAG, "Primary Overpass server failed (${e.message}), attempting mirror server...")
                 primaryError = e
@@ -66,6 +71,8 @@ class TouristPlaceRepository(
                 val places = parsePlaces(response)
                 cache[cacheKey] = places
                 return@withContext Result.success(places)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Mirror Overpass server also failed: ${e.message}", e)
                 val err = primaryError ?: e
@@ -84,20 +91,29 @@ class TouristPlaceRepository(
     private fun parsePlaces(response: OverpassResponse): List<TouristPlace> {
         val elements = response.elements ?: emptyList()
         return elements.mapNotNull { element ->
+            val osmType = element.type?.takeIf { it in setOf("node", "way", "relation") }
+                ?: return@mapNotNull null
+            val id = element.id ?: return@mapNotNull null
             val tags = element.tags ?: emptyMap()
             val name = tags["name"] ?: return@mapNotNull null
 
             val latitude = element.lat ?: element.center?.lat ?: return@mapNotNull null
             val longitude = element.lon ?: element.center?.lon ?: return@mapNotNull null
+            if (!validCoordinates(latitude, longitude)) return@mapNotNull null
 
-            val category = tags["tourism"] ?: tags["historic"] ?: tags["leisure"] ?: "Attraction"
+            val category = when {
+                tags["tourism"] in tourismCategories -> tags.getValue("tourism")
+                tags["historic"] in historicCategories -> tags.getValue("historic")
+                else -> return@mapNotNull null
+            }
 
             val address = tags["addr:full"] ?: tags["addr:street"]
             val website = tags["website"] ?: tags["contact:website"]
             val openingHours = tags["opening_hours"]
 
             TouristPlace(
-                id = element.id ?: 0L,
+                osmType = osmType,
+                id = id,
                 name = name,
                 category = category.replaceFirstChar { it.uppercase() },
                 latitude = latitude,
@@ -106,6 +122,6 @@ class TouristPlaceRepository(
                 website = website,
                 openingHours = openingHours
             )
-        }.distinctBy { it.id }
+        }.distinctBy { it.osmType to it.id }
     }
 }

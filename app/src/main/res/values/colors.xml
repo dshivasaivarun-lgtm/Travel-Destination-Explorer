@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+
 <resources>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
@@ -7,4 +7,14 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="travel_primary">#50618F</color>
+    <color name="travel_primary_dark">#35456F</color>
+    <color name="travel_background">#FAF9FF</color>
+    <color name="travel_surface">#FFFFFF</color>
+    <color name="travel_card">#E2E4EF</color>
+    <color name="travel_accent">#FF7043</color>
+    <color name="travel_favorite">#E53958</color>
+    <color name="travel_text_primary">#25283A</color>
+    <color name="travel_text_secondary">#666B80</color>
 </resources>

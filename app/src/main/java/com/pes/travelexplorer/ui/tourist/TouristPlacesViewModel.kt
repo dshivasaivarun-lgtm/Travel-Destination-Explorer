@@ -19,12 +19,14 @@ sealed interface TouristPlacesUiState {
 class TouristPlacesViewModel(
     private val repository: TouristPlaceRepository = TouristPlaceRepository()
 ) : ViewModel() {
+    private var loadJob: kotlinx.coroutines.Job? = null
 
     private val _uiState = MutableStateFlow<TouristPlacesUiState>(TouristPlacesUiState.Loading)
     val uiState: StateFlow<TouristPlacesUiState> = _uiState.asStateFlow()
 
     fun loadTouristPlaces(lat: Double, lon: Double, radius: Int = 5000) {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _uiState.value = TouristPlacesUiState.Loading
             val result = repository.getTouristPlaces(lat, lon, radius)
             result.fold(

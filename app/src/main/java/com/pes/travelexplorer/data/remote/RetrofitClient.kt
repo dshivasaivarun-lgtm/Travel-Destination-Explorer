@@ -1,3 +1,4 @@
+
 package com.pes.travelexplorer.data.remote
 
 import android.util.Log
@@ -9,21 +10,30 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
+
     private const val TAG = "RetrofitClient"
-    private const val BASE_URL = "https://api.restcountries.com/countries/v5/"
+
+    // Correct REST Countries v5 base URL
+    private const val BASE_URL =
+        "https://api.restcountries.com/countries/v5/"
 
     private val authInterceptor = Interceptor { chain ->
+
         val apiKey = BuildConfig.API_KEY.trim()
-        val originalRequest = chain.request()
-        val request = originalRequest.newBuilder()
+
+        val request = chain.request()
+            .newBuilder()
             .header("Authorization", "Bearer $apiKey")
             .build()
-        try {
-            chain.proceed(request)
-        } catch (e: Exception) {
-            Log.e(TAG, "Network request failed in interceptor: ${e.message}", e)
-            throw e
-        }
+
+        val response = chain.proceed(request)
+
+        Log.d(
+            TAG,
+            "Request: ${request.url} | HTTP: ${response.code}"
+        )
+
+        response
     }
 
     private val okHttpClient = OkHttpClient.Builder()

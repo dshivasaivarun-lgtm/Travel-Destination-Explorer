@@ -26,10 +26,10 @@ data class City(
     @SerializedName("name")
     val name: String?,
 
-    @SerializedName("latitude")
+    @SerializedName(value = "lat", alternate = ["latitude"])
     val latitude: Double?,
 
-    @SerializedName("longitude")
+    @SerializedName(value = "lon", alternate = ["longitude"])
     val longitude: Double?,
 
     @SerializedName("population")

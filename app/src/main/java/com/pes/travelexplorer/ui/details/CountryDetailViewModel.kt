@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 
 sealed interface CountryDetailUiState {
     object Loading : CountryDetailUiState
@@ -16,16 +18,22 @@ sealed interface CountryDetailUiState {
 }
 
 class CountryDetailViewModel(
-    private val repository: CountryRepository = CountryRepository()
+    private val repository: CountryRepository = CountryRepository(),
+    private val loadCountry: suspend (String) -> Result<Country?> = repository::getCountryByCode
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CountryDetailUiState>(CountryDetailUiState.Loading)
     val uiState: StateFlow<CountryDetailUiState> = _uiState.asStateFlow()
+    private var loadJob: Job? = null
 
     fun loadCountryDetails(alpha3: String) {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _uiState.value = CountryDetailUiState.Loading
-            val result = repository.getCountryByCode(alpha3)
+            val result = loadCountry(alpha3)
+            result.exceptionOrNull()?.let { error ->
+                if (error is CancellationException) throw error
+            }
             result.fold(
                 onSuccess = { country ->
                     if (country != null) {

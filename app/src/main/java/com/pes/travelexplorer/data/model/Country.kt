@@ -10,7 +10,15 @@ data class CountryResponse(
 
 data class CountryData(
     @SerializedName("objects")
-    val objects: List<Country>?
+    val objects: List<Country>?,
+    @SerializedName("meta") val meta: CountryPageMeta? = null
+)
+data class CountryPageMeta(
+    val total: Int = 0,
+    val count: Int = 0,
+    val limit: Int = 25,
+    val offset: Int = 0,
+    val more: Boolean = false
 )
 
 data class Country(

@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -120,9 +121,10 @@ fun CityItemCard(city: City, onTouristPlacesClick: (String, Double, Double) -> U
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                val lat = city.latitude ?: 12.9716
-                val lon = city.longitude ?: 77.5946
+            .clickable(enabled = city.latitude != null && city.longitude != null &&
+                com.pes.travelexplorer.utils.validCoordinates(city.latitude, city.longitude)) {
+                val lat = city.latitude ?: return@clickable
+                val lon = city.longitude ?: return@clickable
                 onTouristPlacesClick(city.name ?: "City", lat, lon)
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -139,7 +141,8 @@ fun CityItemCard(city: City, onTouristPlacesClick: (String, Double, Double) -> U
                 fontWeight = FontWeight.Bold
             )
             if (city.population != null) {
-                val formattedPop = NumberFormat.getNumberInstance(Locale.getDefault()).format(city.population)
+                val locale = LocalConfiguration.current.locales[0] ?: Locale.ROOT
+                val formattedPop = NumberFormat.getNumberInstance(locale).format(city.population)
                 Text(
                     text = "Population: $formattedPop",
                     style = MaterialTheme.typography.bodyMedium
