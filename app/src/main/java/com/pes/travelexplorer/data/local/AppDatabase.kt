@@ -26,18 +26,14 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
 
         fun getDatabase(context: Context): AppDatabase {
-
             return INSTANCE ?: synchronized(this) {
-
-                val instance = Room.databaseBuilder(
+                INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "travel_explorer_database"
-                )
-                    .build()
-
-                INSTANCE = instance
-                instance
+                ).build().also { database ->
+                    INSTANCE = database
+                }
             }
         }
     }
