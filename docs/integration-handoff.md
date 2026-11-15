@@ -1,4 +1,6 @@
-# Mandatory integration handoff
+# Mandatory integration handoff (historical plan)
+
+**Current status, 16 November:** PR #10 and the owner fixes are merged into `main`; #4-#7 are closed. The estimates and review tasks below describe the original integration plan. Use [release status](release-status.md) and [phone demonstration](phone-demonstration.md) for the remaining submission work.
 
 The integration branch combines PR #2 (Ravitejas Explore) and PR #3 (Gowtham Room/Wishlist/Trips) without squashing or replacing their author history. Varun's API/details/maps module remains the foundation from main. Existing PRs are not automatically merged or closed.
 

@@ -1,4 +1,6 @@
-# Integration verification
+# Integration verification (historical)
+
+**16 November update:** PR #10 and Varun's fixes are merged into main. Final checks pass with 26 unit and 19 emulator tests; see [submission verification](submission-verification.md) and [release status](release-status.md). The dated entries below describe earlier revisions, not the current release status.
 
 ## Latest owner acceptance — 15 November 2026
 

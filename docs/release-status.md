@@ -1,18 +1,26 @@
-# MVP release status — 15 November 2026
+# MVP release status - 16 November 2026
 
-The mandatory implementation is in [integration PR #10](https://github.com/dshivasaivarun-lgtm/Travel-Destination-Explorer/pull/10), branch `integration/mandatory-features`. It has not been merged into `main`.
+The mandatory implementation and teammate fixes are merged into `main` through [PR #10](https://github.com/dshivasaivarun-lgtm/Travel-Destination-Explorer/pull/10), merge commit `223f875`. Feature PR histories #2/#3 are included. Issues #4-#7 are closed; no further mandatory feature-building round is planned.
 
-## Owner progress
+## Completed implementation and owner work
 
-- **Gowtham (#5):** [posted completed manual emulator validation and source review](https://github.com/dshivasaivarun-lgtm/Travel-Destination-Explorer/issues/5#issuecomment-6880454347). His reported checks cover Room persistence, offline Wishlist, trip CRUD, dates, editing, cancellation and keyboard access. He also pushed `c29c97a`, adding the second singleton check inside Room's synchronized initialization; this fix is now incorporated with his author history preserved and the combined checks pass. The #5 owner-verification scope is complete; physical-device acceptance remains in #8.
-- **Ravitejas (#4/#7):** the core journey, preferences, intents, photos and integration code are implemented. Additional acceptance checks exercise saved screens and trip editing with emulator connectivity disabled, and external-app absence/invalid-link handling. The full combined check passed: 15 unit tests and 17 emulator tests, zero failures/skips and zero lint errors. This implementation/emulator acceptance scope is complete; target-device checks and merge remain in #8.
-- **Varun (#6):** API/map owner verification remains open; no completion evidence was posted when this status was checked. His remaining scope is the real country/network and states/cities/attractions/map flow, coordinates, radius consistency, and photo/details review, with fixes only if defects are found.
-- **Shared (#8):** final merge, physical-device acceptance, full submission recording/PDF and individual viva. A review PDF and short emulator preview already exist, but do not replace final delivery evidence.
+- **Gowtham (#5):** Room/Wishlist/Trips foundation, reported emulator CRUD/date/restart/offline checks and database singleton correction, incorporated with his author history preserved.
+- **Varun (#6):** API/details/geography/maps, owner completion reported and issue closed. His merged fixes harden cancellation/photo failure/map query behavior, map PlaceDB latitude/longitude fields and restrict Overpass results to actual attraction categories with OSM type/ID identity.
+- **Ravitejas (#4/#7):** Explore, navigation/prefill, preferences, intents, photos/resources, integration and regression checks. Release verification corrects a city-card test that mounted Compose content twice; app behavior is unchanged.
+- **Final combined checks:** build successful; **26 unit tests + 19 emulator tests passed**, zero failures/errors/skips. Lint: zero errors, 55 warnings and one hint. See [final verification](submission-verification.md).
 
-## After Varun finishes
+## Submission package and remaining human work
 
-1. Record his runtime results on #6. If he has code fixes, incorporate the actual commits into the integration branch without duplicating his work.
-2. Validate the final combined revision and have the team accept PR #10. Merge the integration once; verify the heads of #2 and #3 are included before closing any superseded feature PRs. Do not merge divergent old screen implementations independently over the integrated result.
-3. Complete #8 together: run on the physical Android device, capture the complete functionality video and all final screenshots, finalize the PDF with team identifiers/contributions/limitations/credits, verify repository links and prepare the individual viva.
+[Project report](project-report.pdf), [submission recording](video/submission-demo.mp4), final screenshots, [photo credits](photo-credits.md) and [submission/viva guide](submission-guide.md) are the release artifacts. Earlier integration review/preview files remain historical evidence.
 
-No further mandatory feature-building round is planned after those gates pass. Bugs found during owner/device verification still need correction. The optional attraction-to-trip feature, destination introductions/photo expansion and day-by-day itinerary remain proposals, not implemented or assigned release requirements.
+The single remaining shared tracker is [issue #8](https://github.com/dshivasaivarun-lgtm/Travel-Destination-Explorer/issues/8):
+
+1. **Ravitejas:** run the submitted revision on the USB-debugging-enabled physical phone and complete the [device checklist/result record](phone-demonstration.md). A physical-device pass is not claimed by the emulator evidence.
+2. **All three:** inspect the final repository report/video, confirm institution-specific team details if needed, submit the repository and prepare the individual viva.
+3. Correct any reproducible defect found during the physical run before marking device acceptance complete.
+
+The user has confirmed a suitable phone and can run the project in Android Studio. A GitHub ZIP excludes the ignored API credential; recreate private local configuration using the README instructions.
+
+## Optional work
+
+Varun's finer trip destinations suggestion is feasible but is not implemented: **4-8 person-hours** for structured country/state/city selection, or **8-16 total** including attractions, a non-destructive Room migration and regression checks. A free-text city/place field is a smaller **2-4 hour** alternative, not a real picker. [Detailed estimate](destination-selection-estimate.md). UI redesign is deferred as requested. No optional extension is required to complete this MVP.
