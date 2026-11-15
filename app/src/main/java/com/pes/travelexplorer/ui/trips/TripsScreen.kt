@@ -39,6 +39,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 
@@ -124,7 +125,7 @@ fun TripsScreen(
                 ) { trip ->
 
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().testTag("trip_${trip.id}"),
                         elevation = CardDefaults.cardElevation(3.dp)
                     ) {
                         Column(

@@ -34,11 +34,15 @@ class CoreJourneyTest {
             compose.onNodeWithText("My Wishlist").performClick()
             compose.waitUntil(10_000) { compose.onAllNodesWithText("India").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("India").performClick()
+            compose.waitUntil(90_000) {
+                compose.onAllNodesWithText("Plan trip", substring = false).fetchSemanticsNodes().isNotEmpty()
+            }
             compose.onNodeWithText("Plan trip").performScrollTo().performClick()
             compose.waitUntil(10_000) { compose.onAllNodesWithText("India").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("Trip title").performTextInput("Integration journey")
             compose.onNodeWithText("Save trip").performScrollTo().performClick()
-            compose.onNodeWithText("Enter a title, select a destination and use valid dates with end on or after start.").assertIsDisplayed()
+            compose.onNodeWithText("Enter a title, select a destination and use valid dates with end on or after start.")
+                .performScrollTo().assertIsDisplayed()
             compose.onNodeWithText("Cancel").performScrollTo().performClick()
             assertTrue(runBlocking { db.tripDao().getAllTrips().first().none { it.title == "Integration journey" } })
         } finally {
