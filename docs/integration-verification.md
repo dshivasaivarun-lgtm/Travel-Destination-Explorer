@@ -1,5 +1,24 @@
 # Integration verification
 
+## Latest owner acceptance — 15 November 2026
+
+Source commit: `79f14fb`. Gowtham's Room singleton initialization correction (`c29c97a`) is merged with original authorship preserved.
+
+Full command: `bash ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:connectedDebugAndroidTest --console=plain` — **BUILD SUCCESSFUL in 1m 38s**.
+
+- **15 unit tests and 17 emulator tests passed**, zero failures/errors/skips.
+- Lint: zero errors, 55 warnings and 1 hint remain.
+- New offline acceptance disables Wi-Fi/mobile data only on the isolated emulator, opens saved Wishlist/Trips, edits a saved trip successfully and restores connectivity/test records. It does not switch connectivity on a physical phone.
+- Four external-action checks verify the web action and plain-text chooser payload, missing-handler safety and invalid-link rejection. These use a capturing Context; they do not send a message or claim a physical target-app pass.
+- Live journey test now waits for Details data after Wishlist navigation and scrolls validation text into view. Earlier attempts exposed these test timing/viewport assumptions; the final full suite passed after correcting them.
+- Raw logs/XML/summary: `/home/ravitejas/projects/Travel-Explorer-Integration-Evidence/owner-acceptance/`.
+
+Gowtham has [reported completed emulator validation and code review](https://github.com/dshivasaivarun-lgtm/Travel-Destination-Explorer/issues/5#issuecomment-6880454347). Your #4/#7 implementation/emulator acceptance and his #5 verification scope are complete. Varun's #6 verification remains open. Merge, physical-device checks and final submission are tracked together in #8. No main-branch merge was performed.
+
+See [current release status and next steps](release-status.md). The existing PDF/preview below are the earlier review artifacts, not the final submission package.
+
+## Earlier integration evidence — 14 November 2026
+
 Source: `integration/mandatory-features`, combining PR #2 at `27e612b` and PR #3 at `8bbeef0` with focused integration/correctness changes. Remote heads were checked again before publication and remained unchanged. No existing PR was merged on GitHub.
 
 ## Automated checks

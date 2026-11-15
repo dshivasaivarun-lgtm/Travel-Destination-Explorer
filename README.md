@@ -32,6 +32,6 @@ Connected live tests require a working key and network. A test skipped for missi
 - Dharoor Shiva Sai Varun: API/details and geographic/map exploration.
 - Gowtham B: Room, Wishlist and Trips foundation.
 
-[Integration verification and artifacts](docs/integration-verification.md) · [Review PDF](docs/integration-review.pdf) · [Emulator preview](docs/video/integration-preview.mp4) · [Integration ownership, release checklist and viva script](docs/integration-handoff.md) · [Photo sources and licenses](docs/photo-credits.md) · [Phase 1 verification](docs/phase1-explore.md)
+[Current MVP release status](docs/release-status.md) · [Integration verification and artifacts](docs/integration-verification.md) · [Review PDF](docs/integration-review.pdf) · [Emulator preview](docs/video/integration-preview.mp4) · [Integration ownership, release checklist and viva script](docs/integration-handoff.md) · [Photo sources and licenses](docs/photo-credits.md) · [Phase 1 verification](docs/phase1-explore.md)
 
 The integration branch contains both feature PR histories for review. Existing feature PRs are not automatically merged. Physical-device verification and final video/PDF submission are tracked in issue #8; see the integration verification notes for actual automated results and any emulator artifacts.
