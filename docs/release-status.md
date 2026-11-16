@@ -1,4 +1,4 @@
-# MVP release status - 16 November 2026
+# MVP release status - 17 November 2026
 
 The mandatory implementation and teammate fixes are merged into `main` through [PR #10](https://github.com/dshivasaivarun-lgtm/Travel-Destination-Explorer/pull/10), merge commit `223f875`. Feature PR histories #2/#3 are included. Issues #4-#7 are closed; no further mandatory feature-building round is planned.
 
@@ -11,12 +11,12 @@ The mandatory implementation and teammate fixes are merged into `main` through [
 
 ## Submission package and remaining human work
 
-[Project report](project-report.pdf), [submission recording](video/submission-demo.mp4), final screenshots, [photo credits](photo-credits.md) and [submission/viva guide](submission-guide.md) are the release artifacts. Earlier integration review/preview files remain historical evidence.
+[Submitted report](Travel_Destination_Explorer_Report.pdf), [submission recording](video/submission-demo.mp4), final screenshots, [photo credits](photo-credits.md) and [submission/viva guide](submission-guide.md) are the release artifacts. The earlier `project-report.pdf` and integration review remain supporting development evidence; the short preview was removed during cleanup. The team has confirmed submission of the report and repository link.
 
 The single remaining shared tracker is [issue #8](https://github.com/dshivasaivarun-lgtm/Travel-Destination-Explorer/issues/8):
 
 1. **Ravitejas:** run the submitted revision on the USB-debugging-enabled physical phone and complete the [device checklist/result record](phone-demonstration.md). A physical-device pass is not claimed by the emulator evidence.
-2. **All three:** inspect the final repository report/video, confirm institution-specific team details if needed, submit the repository and prepare the individual viva.
+2. **All three:** use the submitted report as the reference for the final demonstration and prepare the individual viva. The report and repository link have already been submitted.
 3. Correct any reproducible defect found during the physical run before marking device acceptance complete.
 
 The user has confirmed a suitable phone and can run the project in Android Studio. A GitHub ZIP excludes the ignored API credential; recreate private local configuration using the README instructions.

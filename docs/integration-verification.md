@@ -56,13 +56,13 @@ Raw logs, XML, lint and summary are retained outside Git at `/home/ravitejas/pro
 - Edited the trip, opened the Android share chooser with correct destination/dates, cancelled sharing, and used confirmed deletion.
 - Research destination launched Chrome’s first-run activity. Browser onboarding and the final research page were not completed.
 - Selected Explore region restored after force-stop/relaunch.
-- Screenshot evidence is under `docs/screenshots/integration/`.
+- The original `docs/screenshots/integration/` evidence was removed in the later cleanup; [current integrated screenshots](screenshots/submission/) remain available.
 - The initial emulator session exited while recording; that incomplete video was discarded. A subsequent recording was finalized and checked. The preview is intentionally limited to trip creation/relaunch and is **not** the final all-functionality submission video.
 
 ## Artifacts and remaining release work
 
 - [Integration review PDF](integration-review.pdf): team/contributions, requirement coverage, verification, core screenshots and photo credits; rendered and visually checked. This is a review report, not the final institution-formatted submission.
-- [Short emulator preview](video/integration-preview.mp4): actual emulator recording with idle portions trimmed; no audio. Final complete-functionality recording remains issue #8.
+- The historical 21-second emulator preview was removed during cleanup. The [complete submission recording](video/submission-demo.mp4) is now available.
 - [Ownership/release/viva handoff](integration-handoff.md)
 - [Photo credits](photo-credits.md)
 

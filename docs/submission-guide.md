@@ -3,15 +3,17 @@
 ## Repository deliverables
 
 - Source and setup: repository root and README.
-- Report: `docs/project-report.pdf` (team, project, requirement coverage, results, screens and credits).
+- Submitted report: `docs/Travel_Destination_Explorer_Report.pdf` (the exact PDF submitted by the team).
 - Recording: `docs/video/submission-demo.mp4` (actual emulator interaction; idle waits trimmed).
 - Latest verification: `docs/submission-verification.md`.
 - Photo credits: `docs/photo-credits.md`.
 - Physical-phone checklist/result: `docs/phone-demonstration.md`.
 
-The older integration-review PDF and 21-second integration preview are historical artifacts. Use the submission artifacts above for evaluation.
+The earlier `project-report.pdf` and `integration-review.pdf` are supporting development evidence. The old 21-second integration preview was removed during repository cleanup. Use the submitted report and complete recording above for evaluation.
 
-## Before submitting
+The team has confirmed that the submitted report and repository link were sent. The submitted PDF is preserved unchanged.
+
+## Final demonstration and viva checks
 
 1. Download/update the final main revision and run it on the physical phone. Complete the device record; keep unresolved defects visible until corrected.
 2. Open the PDF and video from GitHub to ensure they play/download. Check any institution-specific cover details/student identifiers against the team's actual records; no identifiers are invented here.

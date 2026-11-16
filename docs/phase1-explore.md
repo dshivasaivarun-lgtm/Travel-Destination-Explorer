@@ -91,10 +91,7 @@ See `phase1-requirements.md` for the original evidence-to-code matrix.
 
 ## Screenshots
 
-- [Live country list with Glide flags](screenshots/explore-live-list.png)
-- [Live search and region selection](screenshots/explore-live-filtered.png)
-- [No matches and reset action](screenshots/explore-live-empty.png)
-- [India details reached through Alpha-3](screenshots/details-live-ind.png)
+The original Phase 1 images were removed during the later repository cleanup; their earlier versions remain in Git history. See [current integrated screenshots](screenshots/submission/) for the submitted app. These are later evidence, rather than the original Phase 1 captures.
 
 ## Git and publication status
 
