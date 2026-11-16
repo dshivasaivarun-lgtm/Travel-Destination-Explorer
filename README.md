@@ -32,6 +32,8 @@ Connected live tests require a working key and network. A test skipped for missi
 - Dharoor Shiva Sai Varun: API/details and geographic/map exploration.
 - Gowtham B: Room, Wishlist and Trips foundation.
 
-[Current release status](docs/release-status.md) · [Project report](docs/project-report.pdf) · [Submission recording](docs/video/submission-demo.mp4) · [Final verification](docs/submission-verification.md) · [Phone demonstration](docs/phone-demonstration.md) · [Submission/viva guide](docs/submission-guide.md) · [Photo sources and licenses](docs/photo-credits.md) · [Optional destination estimate](docs/destination-selection-estimate.md)
+[Current release status](docs/release-status.md) · [Submitted report](docs/Travel_Destination_Explorer_Report.pdf) · [Submission recording](docs/video/submission-demo.mp4) · [Final verification](docs/submission-verification.md) · [Phone demonstration](docs/phone-demonstration.md) · [Submission/viva guide](docs/submission-guide.md) · [Photo sources and licenses](docs/photo-credits.md) · [Optional destination estimate](docs/destination-selection-estimate.md)
 
 PR #10 and the owner fixes are merged into main, retaining both feature PR histories. Mandatory implementation is complete. The physical-phone demonstration and individual viva remain team responsibilities under issue #8; see the release status for actual verification results. Older integration-review artifacts are retained as historical evidence.
+
+The submitted report is `docs/Travel_Destination_Explorer_Report.pdf`. The earlier `docs/project-report.pdf` and integration review are supporting development evidence.

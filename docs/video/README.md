@@ -26,4 +26,4 @@ Actual app interaction is recorded, with long visually static waits trimmed. No 
 - Chrome first-run was completed without signing in. Research destination then displayed the intended search page. External websites are separate from the app.
 - This is emulator evidence. The required physical-phone demonstration remains in [the device checklist](../phone-demonstration.md).
 
-The older `integration-preview.mp4` is a historical 21-second preview, not the submission walkthrough.
+The older 21-second integration preview was removed during repository cleanup. This complete recording is the submission walkthrough.

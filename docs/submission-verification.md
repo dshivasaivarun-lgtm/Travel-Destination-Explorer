@@ -31,7 +31,8 @@ The final emulator recording and screenshots document the displayed app behavior
 
 ## Evidence and final acceptance
 
-- [Project report](project-report.pdf)
+- [Submitted report](Travel_Destination_Explorer_Report.pdf), preserved as submitted by the team
+- [Earlier technical verification report](project-report.pdf)
 - [Submission recording](video/submission-demo.mp4) and [recording notes](video/README.md)
 - [Final screenshots](screenshots/submission/)
 - [Phone demonstration checklist/result](phone-demonstration.md)
