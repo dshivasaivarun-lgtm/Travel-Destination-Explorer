@@ -20,6 +20,9 @@ class TouristPlaceRepository(
     private val maxRetries: Int = 1,
     private val initialDelayMs: Long = 500L
 ) {
+    @Volatile
+    private var preferredApiIsMirror = false
+
     companion object {
         private const val TAG = "TouristPlaceRepository"
         private val cache = java.util.concurrent.ConcurrentHashMap<String, List<TouristPlace>>()
@@ -54,10 +57,14 @@ class TouristPlaceRepository(
 
             val requestBody = query.toRequestBody("text/plain; charset=utf-8".toMediaTypeOrNull())
 
-            // Try primary server with retries
+            val firstTargetIsMirror = preferredApiIsMirror
+            val primaryTarget = if (firstTargetIsMirror) mirrorApi else api
+            val secondaryTarget = if (firstTargetIsMirror) api else mirrorApi
+
+            // Try preferred server with retries
             try {
                 val response = executeWithRetry {
-                    api.getTouristPlaces(requestBody)
+                    primaryTarget.getTouristPlaces(requestBody)
                 }
                 val places = parsePlaces(response)
                 cache[cacheKey] = places
@@ -65,21 +72,25 @@ class TouristPlaceRepository(
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
-                logW(TAG, "Primary Overpass server failed (${e.message}), attempting mirror server...")
+                val firstName = if (firstTargetIsMirror) "Mirror" else "Primary"
+                val secondName = if (firstTargetIsMirror) "Primary" else "Mirror"
+                logW(TAG, "$firstName Overpass server failed (${e.message}), attempting $secondName server...")
             }
 
-            // Fallback to secondary mirror server with retries
+            // Fallback server with retries
             try {
                 val response = executeWithRetry {
-                    mirrorApi.getTouristPlaces(requestBody)
+                    secondaryTarget.getTouristPlaces(requestBody)
                 }
                 val places = parsePlaces(response)
                 cache[cacheKey] = places
+                // Remember working server preference for subsequent requests
+                preferredApiIsMirror = !firstTargetIsMirror
                 return@withContext Result.success(places)
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
-                logE(TAG, "Mirror Overpass server also failed: ${e.message}")
+                logE(TAG, "Fallback Overpass server also failed: ${e.message}")
                 val finalError = e
                 val message = formatErrorMessage(finalError)
                 Result.failure(Exception(message, finalError))
