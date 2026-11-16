@@ -7,14 +7,18 @@ import com.pes.travelexplorer.data.remote.OverpassApi
 import com.pes.travelexplorer.data.remote.OverpassClient
 import com.pes.travelexplorer.utils.validCoordinates
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
+import java.io.IOException
 
 class TouristPlaceRepository(
     private val api: OverpassApi = OverpassClient.api,
-    private val mirrorApi: OverpassApi = OverpassClient.mirrorApi
+    private val mirrorApi: OverpassApi = OverpassClient.mirrorApi,
+    private val maxRetries: Int = 1,
+    private val initialDelayMs: Long = 500L
 ) {
     companion object {
         private const val TAG = "TouristPlaceRepository"
@@ -34,7 +38,7 @@ class TouristPlaceRepository(
     ): Result<List<TouristPlace>> {
         val cacheKey = "${lat}_${lon}_$radiusMeters"
         cache[cacheKey]?.let { cached ->
-            Log.d(TAG, "Returning cached tourist places for key: $cacheKey")
+            logD(TAG, "Returning cached tourist places for key: $cacheKey")
             return Result.success(cached)
         }
 
@@ -50,41 +54,95 @@ class TouristPlaceRepository(
 
             val requestBody = query.toRequestBody("text/plain; charset=utf-8".toMediaTypeOrNull())
 
-            var primaryError: Exception? = null
-
-            // Try primary server
+            // Try primary server with retries
             try {
-                val response = api.getTouristPlaces(requestBody)
-                val places = parsePlaces(response)
-                cache[cacheKey] = places
-                return@withContext Result.success(places)
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Log.w(TAG, "Primary Overpass server failed (${e.message}), attempting mirror server...")
-                primaryError = e
-            }
-
-            // Fallback to secondary mirror server
-            try {
-                val response = mirrorApi.getTouristPlaces(requestBody)
-                val places = parsePlaces(response)
-                cache[cacheKey] = places
-                return@withContext Result.success(places)
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Log.e(TAG, "Mirror Overpass server also failed: ${e.message}", e)
-                val err = primaryError ?: e
-                val message = when {
-                    err is HttpException && err.code() == 502 ->
-                        "Overpass server is temporarily busy (HTTP 502 Bad Gateway). Please tap Retry in a few seconds."
-                    err is HttpException && err.code() == 429 ->
-                        "Rate limit exceeded (HTTP 429). Please wait a moment."
-                    else -> err.localizedMessage ?: "Network error occurred. Please try again."
+                val response = executeWithRetry {
+                    api.getTouristPlaces(requestBody)
                 }
-                Result.failure(Exception(message, err))
+                val places = parsePlaces(response)
+                cache[cacheKey] = places
+                return@withContext Result.success(places)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                logW(TAG, "Primary Overpass server failed (${e.message}), attempting mirror server...")
             }
+
+            // Fallback to secondary mirror server with retries
+            try {
+                val response = executeWithRetry {
+                    mirrorApi.getTouristPlaces(requestBody)
+                }
+                val places = parsePlaces(response)
+                cache[cacheKey] = places
+                return@withContext Result.success(places)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                logE(TAG, "Mirror Overpass server also failed: ${e.message}")
+                val finalError = e
+                val message = formatErrorMessage(finalError)
+                Result.failure(Exception(message, finalError))
+            }
+        }
+    }
+
+    private fun logD(tag: String, msg: String) {
+        try { Log.d(tag, msg) } catch (_: Throwable) { println("[$tag] D: $msg") }
+    }
+
+    private fun logW(tag: String, msg: String) {
+        try { Log.w(tag, msg) } catch (_: Throwable) { println("[$tag] W: $msg") }
+    }
+
+    private fun logE(tag: String, msg: String) {
+        try { Log.e(tag, msg) } catch (_: Throwable) { println("[$tag] E: $msg") }
+    }
+
+    private suspend fun <T> executeWithRetry(
+        block: suspend () -> T
+    ): T {
+        var currentDelay = initialDelayMs
+        var lastException: Exception? = null
+        for (attempt in 0..maxRetries) {
+            try {
+                return block()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                lastException = e
+                if (attempt == maxRetries || !isTransientError(e)) {
+                    throw e
+                }
+                if (currentDelay > 0) {
+                    delay(currentDelay)
+                }
+                currentDelay *= 2
+            }
+        }
+        throw lastException ?: Exception("Request failed after retries")
+    }
+
+    private fun isTransientError(e: Throwable): Boolean {
+        return when (e) {
+            is HttpException -> e.code() in setOf(429, 502, 503, 504)
+            is IOException -> true
+            else -> false
+        }
+    }
+
+    private fun formatErrorMessage(err: Throwable): String {
+        return when (err) {
+            is HttpException -> when (err.code()) {
+                502 -> "Overpass server is temporarily busy (HTTP 502 Bad Gateway). Please tap Retry in a few seconds."
+                503 -> "Overpass server is temporarily unavailable (HTTP 503 Service Unavailable). Please tap Retry in a few seconds."
+                504 -> "Overpass server response timed out (HTTP 504 Gateway Timeout). Please tap Retry in a few seconds."
+                429 -> "Rate limit exceeded (HTTP 429). Please wait a moment."
+                400 -> "Invalid query request (HTTP 400 Bad Request)."
+                else -> "Server error occurred (HTTP ${err.code()}). Please try again."
+            }
+            is IOException -> "Network connection problem. Please check your connection and try again."
+            else -> err.localizedMessage ?: "Network error occurred. Please try again."
         }
     }
 
